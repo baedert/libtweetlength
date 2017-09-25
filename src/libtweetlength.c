@@ -617,11 +617,6 @@ tl_extract_entities_n (const char *input,
     out_text_length = &dummy;
   }
 
-  /*
-   * TODO: We report many "entities" that are not hashtags, mentions or links.
-   *       But they are the only ones any caller of this API would care about.
-   */
-
   tokens = tokenize (input, length_in_bytes);
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
