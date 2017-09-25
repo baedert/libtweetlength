@@ -100,7 +100,8 @@ static inline TlEntity *
 emplace_entity (GArray     *array,
                 guint       entity_type,
                 const char *entity_start,
-                gsize       entity_length)
+                gsize       entity_length,
+                gsize       entity_character_start)
 {
   TlEntity *e;
 
@@ -110,6 +111,7 @@ emplace_entity (GArray     *array,
   e->type = entity_type;
   e->start = entity_start;
   e->length_in_bytes = entity_length;
+  e->start_character_index = entity_character_start;
 
   return e;
 }
@@ -206,13 +208,14 @@ tokenize (const char *input,
     const char *cur_start = p;
     gunichar cur_char = g_utf8_get_char (p);
     gsize cur_length = 0;
+    gsize length_in_chars = 0;
 
     /* If this char already splits, it's a one-char token */
     if (char_splits (cur_char)) {
       const char *old_p = p;
       p = g_utf8_next_char (p);
-      cur_character_index ++;
       emplace_token (tokens, cur_start, p - old_p, cur_character_index);
+      cur_character_index ++;
       continue;
     }
 
@@ -221,10 +224,12 @@ tokenize (const char *input,
       p = g_utf8_next_char (p);
       cur_char = g_utf8_get_char (p);
       cur_length += p - old_p;
-      cur_character_index ++;
+      length_in_chars ++;
     } while (!char_splits (cur_char) && p - input < length_in_bytes);
 
     emplace_token (tokens, cur_start, cur_length, cur_character_index);
+
+    cur_character_index += length_in_chars;
   }
 
   return g_steal_pointer (&tokens);
@@ -347,7 +352,11 @@ parse_link (GArray      *entities,
     length_in_bytes += tokens[i].length_in_bytes;
   }
 
-  emplace_entity (entities, TL_ENT_LINK, first_byte, length_in_bytes);
+  emplace_entity (entities,
+                  TL_ENT_LINK,
+                  first_byte,
+                  length_in_bytes,
+                  tokens[start_token].start_character_index);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -387,7 +396,11 @@ parse_mention (GArray      *entities,
     length_in_bytes += tokens[i].length_in_bytes;
   }
 
-  emplace_entity (entities, TL_ENT_MENTION, first_byte, length_in_bytes);
+  emplace_entity (entities,
+                  TL_ENT_MENTION,
+                  first_byte,
+                  length_in_bytes,
+                  tokens[start_token].start_character_index);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -427,7 +440,11 @@ parse_hashtag (GArray      *entities,
     length_in_bytes += tokens[i].length_in_bytes;
   }
 
-  emplace_entity (entities, TL_ENT_HASHTAG, first_byte, length_in_bytes);
+  emplace_entity (entities,
+                  TL_ENT_HASHTAG,
+                  first_byte,
+                  length_in_bytes,
+                  tokens[start_token].start_character_index);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -473,7 +490,11 @@ parse (const Token *tokens,
       break;
     }
 
-    emplace_entity (entities, TL_ENT_TEXT, token->start, token->length_in_bytes);
+    emplace_entity (entities,
+                    TL_ENT_TEXT,
+                    token->start,
+                    token->length_in_bytes,
+                    token->start_character_index);
 
     i ++;
   }
@@ -617,19 +638,33 @@ tl_extract_entities_n (const char *input,
   if (input == NULL || input[0] == '\0') {
     return 0;
   }
+  g_debug ("------- INPUT: %s %p (Bytes: %u)-------", input, input, (guint) length_in_bytes); // XXX Expected to be NUL-terminated
 
   if (out_text_length == NULL) {
     out_text_length = &dummy;
   }
 
   tokens = tokenize (input, length_in_bytes);
+
+  /*for (guint i = 0; i < tokens->len; i ++) {*/
+    /*const Token *t = &g_array_index (tokens, Token, i);*/
+    /*g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s, start char: %u", i, t->type, (guint)t->length_in_bytes,*/
+               /*(int)t->length_in_bytes, t->start, (guint)t->start_character_index);*/
+  /*}*/
+
+
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
-
   entities = parse (token_array, n_tokens, &n_relevant_entities);
 
   *out_text_length = count_entities_in_characters (entities);
   g_free ((char *)token_array);
+
+  /*for (guint i = 0; i < entities->len; i ++) {*/
+    /*const TlEntity *e = &g_array_index (entities, TlEntity, i);*/
+    /*g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u, start character: %u", i, (int)e->length_in_bytes, e->start,*/
+               /*e->type, (guint)e->length_in_bytes, (guint)entity_length_in_characters (e), (guint)e->start_character_index);*/
+  /*}*/
 
   // Only pass mentions, hashtags and links out
   result_entities = g_malloc (sizeof (TlEntity) * n_relevant_entities);
