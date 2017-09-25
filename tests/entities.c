@@ -25,21 +25,18 @@ mentions (void)
   g_free (entities);
 
   entities = tl_extract_entities ("@foobar?", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 2);
+  g_assert_cmpint (n_entities, ==, 1);
   g_assert_cmpint (text_length, ==, 8);
   g_assert_nonnull (entities);
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
-  g_assert_cmpint (entities[1].type, ==, TL_ENT_TEXT);
 
   g_free (entities);
 
   entities = tl_extract_entities ("@foobar-bla", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 3);
+  g_assert_cmpint (n_entities, ==, 1);
   g_assert_cmpint (text_length, ==, 11);
   g_assert_nonnull (entities);
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
-  g_assert_cmpint (entities[1].type, ==, TL_ENT_TEXT);
-  g_assert_cmpint (entities[2].type, ==, TL_ENT_TEXT);
 
   g_free (entities);
 }

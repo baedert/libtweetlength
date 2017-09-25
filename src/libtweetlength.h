@@ -7,6 +7,9 @@ struct _TlEntity {
   guint type;
   const char *start;
   gsize length_in_bytes;
+
+  gsize start_character_index;
+  gsize length_in_characters;
 };
 typedef struct _TlEntity TlEntity;
 

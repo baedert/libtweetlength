@@ -436,28 +436,33 @@ parse_hashtag (GArray      *entities,
  */
 static GArray *
 parse (const Token *tokens,
-       gsize        n_tokens)
+       gsize        n_tokens,
+       guint       *n_relevant_entities)
 {
   GArray *entities = g_array_new (FALSE, TRUE, sizeof (TlEntity));
   guint i = 0;
+  guint relevant_entities = 0;
 
   while (i < n_tokens) {
     const Token *token = &tokens[i];
 
     // We always have to do this since links can begin with whatever word
     if (parse_link (entities, tokens, n_tokens, &i)) {
+      relevant_entities ++;
       continue;
     }
 
     switch (token->type) {
       case TOK_AT:
         if (parse_mention (entities, tokens, n_tokens, &i)) {
+          relevant_entities ++;
           continue;
         }
       break;
 
       case TOK_HASH:
         if (parse_hashtag (entities, tokens, n_tokens, &i)) {
+          relevant_entities ++;
           continue;
         }
       break;
@@ -466,6 +471,10 @@ parse (const Token *tokens,
     emplace_entity (entities, TL_ENT_TEXT, token->start, token->length_in_bytes);
 
     i ++;
+  }
+
+  if (n_relevant_entities) {
+    *n_relevant_entities = relevant_entities;
   }
 
   return entities;
@@ -535,7 +544,7 @@ tl_count_characters_n (const char *input,
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
 
-  entities = parse (token_array, n_tokens);
+  entities = parse (token_array, n_tokens, NULL);
   /*for (guint i = 0; i < entities->len; i ++) {*/
     /*const TlEntity *e = &g_array_index (entities, TlEntity, i);*/
     /*g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u", i, (int)e->length_in_bytes, e->start,*/
@@ -594,6 +603,9 @@ tl_extract_entities_n (const char *input,
   gsize n_tokens;
   GArray *entities;
   gsize dummy;
+  guint n_relevant_entities;
+  TlEntity *result_entities;
+  guint result_index = 0;
 
   g_return_val_if_fail (out_n_entities != NULL, NULL);
 
@@ -614,12 +626,32 @@ tl_extract_entities_n (const char *input,
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
 
-  entities = parse (token_array, n_tokens);
+  entities = parse (token_array, n_tokens, &n_relevant_entities);
 
   *out_text_length = count_entities_in_characters (entities);
   g_free ((char *)token_array);
 
-  *out_n_entities = entities->len;
+  // Only pass mentions, hashtags and links out
+  result_entities = g_malloc (sizeof (TlEntity) * n_relevant_entities);
+  for (guint i = 0; i < entities->len; i ++) {
+    const TlEntity *e = &g_array_index (entities, TlEntity, i);
+    switch (e->type) {
+      case TL_ENT_LINK:
+      case TL_ENT_HASHTAG:
+      case TL_ENT_MENTION:
+        result_entities[result_index].type = e->type;
+        result_entities[result_index].start = e->start;
+        // TODO: we can probably just use memcpy here and be done!
 
-  return (TlEntity *)g_array_free (entities, FALSE);
+        result_index ++;
+      break;
+
+      default: {}
+    }
+  }
+
+  *out_n_entities = n_relevant_entities;
+  g_array_free (entities, TRUE);
+
+  return result_entities;
 }
