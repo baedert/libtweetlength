@@ -461,6 +461,12 @@ tl_count_characters_n (const char *input,
   return length;
 }
 
+/**
+ * tl_extract_entities:
+ * @input: The input text to extract entities from
+ * @out_n_entities: (out):
+ * @out_text_length: (out) (optional):
+ */
 TlEntity *
 tl_extract_entities (const char *input,
                      gsize      *out_n_entities,
@@ -482,6 +488,13 @@ tl_extract_entities (const char *input,
   return tl_extract_entities_n (input, strlen (input), out_n_entities, out_text_length);
 }
 
+/**
+ * tl_extract_entities:
+ * @input: The input text to extract entities from
+ * @length_in_bytes: length of @input
+ * @out_n_entities: (out):
+ * @out_text_length: (out) (optional):
+ */
 TlEntity *
 tl_extract_entities_n (const char *input,
                        gsize       length_in_bytes,
