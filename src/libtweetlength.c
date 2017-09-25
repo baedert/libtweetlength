@@ -18,6 +18,7 @@ typedef struct {
   const char *start;
   gsize start_character_index;
   gsize length_in_bytes;
+  gsize length_in_characters;
 } Token;
 
 enum {
@@ -83,7 +84,8 @@ static inline void
 emplace_token (GArray     *array,
                const char *token_start,
                gsize       token_length,
-               gsize       start_character_index)
+               gsize       start_character_index,
+               gsize       length_in_characters)
 {
   Token *t;
 
@@ -94,6 +96,7 @@ emplace_token (GArray     *array,
   t->start = token_start;
   t->length_in_bytes = token_length;
   t->start_character_index = start_character_index;
+  t->length_in_characters = length_in_characters;
 }
 
 static inline TlEntity *
@@ -214,7 +217,7 @@ tokenize (const char *input,
     if (char_splits (cur_char)) {
       const char *old_p = p;
       p = g_utf8_next_char (p);
-      emplace_token (tokens, cur_start, p - old_p, cur_character_index);
+      emplace_token (tokens, cur_start, p - old_p, cur_character_index, 1);
       cur_character_index ++;
       continue;
     }
@@ -227,7 +230,7 @@ tokenize (const char *input,
       length_in_chars ++;
     } while (!char_splits (cur_char) && p - input < length_in_bytes);
 
-    emplace_token (tokens, cur_start, cur_length, cur_character_index);
+    emplace_token (tokens, cur_start, cur_length, cur_character_index, length_in_chars);
 
     cur_character_index += length_in_chars;
   }
