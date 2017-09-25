@@ -190,7 +190,7 @@ entity_length_in_characters (const TlEntity *e)
       return LINK_LENGTH;
 
     default:
-      return g_utf8_strlen (e->start, e->length_in_bytes);
+      return e->length_in_characters;
   }
 }
 
