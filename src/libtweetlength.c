@@ -13,14 +13,6 @@ static const char *TLDS[] = {
 #define MAX_TLD_LENGTH 6 // Keep this up to date when changing TLDS!
 
 
-enum {
-  ENT_TEXT = 1,
-  ENT_HASHTAG,
-  ENT_LINK,
-  ENT_MENTION,
-  ENT_WHITESPACE,
-};
-
 typedef struct {
   guint type;
   const char *start;
@@ -169,6 +161,7 @@ char_splits (guchar c)
     case ';':
     case '=':
     case '@':
+    case '#':
     case '\n':
     case '\t':
     case '\0':
@@ -185,7 +178,7 @@ static inline gsize
 entity_length_in_characters (const TlEntity *e)
 {
   switch (e->type) {
-    case ENT_LINK:
+    case TL_ENT_LINK:
       return LINK_LENGTH;
 
     default:
@@ -348,7 +341,7 @@ parse_link (GArray      *entities,
     length_in_bytes += tokens[i].length_in_bytes;
   }
 
-  emplace_entity (entities, ENT_LINK, first_byte, length_in_bytes);
+  emplace_entity (entities, TL_ENT_LINK, first_byte, length_in_bytes);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -379,7 +372,6 @@ parse_mention (GArray      *entities,
   }
 
   end_token = i;
-
   g_assert (end_token < n_tokens);
 
   // Simply add up all the lengths
@@ -389,7 +381,47 @@ parse_mention (GArray      *entities,
     length_in_bytes += tokens[i].length_in_bytes;
   }
 
-  emplace_entity (entities, ENT_MENTION, first_byte, length_in_bytes);
+  emplace_entity (entities, TL_ENT_MENTION, first_byte, length_in_bytes);
+
+  *current_position = end_token + 1; // Hop to the next token!
+
+  return TRUE;
+}
+
+static gboolean
+parse_hashtag (GArray      *entities,
+               const Token *tokens,
+               gsize        n_tokens,
+               guint       *current_position)
+{
+  const Token *t;
+  gsize i = *current_position;
+  guint start_token;
+  guint end_token;
+
+  t = &tokens[i];
+  g_assert (t->type == TOK_HASH);
+  start_token = i;
+
+
+  //skip #
+  i ++;
+  t = &tokens[i];
+  if (t->type != TOK_TEXT) {
+    return FALSE;
+  }
+
+  end_token = i;
+  g_assert (end_token < n_tokens);
+
+  // Simply add up all the lengths
+  gsize length_in_bytes = 0;
+  const char *first_byte = tokens[start_token].start;
+  for (i = start_token; i <= end_token; i ++) {
+    length_in_bytes += tokens[i].length_in_bytes;
+  }
+
+  emplace_entity (entities, TL_ENT_HASHTAG, first_byte, length_in_bytes);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -416,13 +448,21 @@ parse (const Token *tokens,
       continue;
     }
 
-    if (token->type == TOK_AT) {
-      if (parse_mention (entities, tokens, n_tokens, &i)) {
-        continue;
-      }
+    switch (token->type) {
+      case TOK_AT:
+        if (parse_mention (entities, tokens, n_tokens, &i)) {
+          continue;
+        }
+      break;
+
+      case TOK_HASH:
+        if (parse_hashtag (entities, tokens, n_tokens, &i)) {
+          continue;
+        }
+      break;
     }
 
-    emplace_entity (entities, ENT_TEXT, token->start, token->length_in_bytes);
+    emplace_entity (entities, TL_ENT_TEXT, token->start, token->length_in_bytes);
 
     i ++;
   }
@@ -565,7 +605,11 @@ tl_extract_entities_n (const char *input,
   }
 
   tokens = tokenize (input, length_in_bytes);
-
+  /*for (guint i = 0; i < tokens->len; i ++) {*/
+    /*const Token *t = &g_array_index (tokens, Token, i);*/
+    /*g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s", i, t->type, (guint)t->length_in_bytes,*/
+               /*(int)t->length_in_bytes, t->start);*/
+  /*}*/
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
 
