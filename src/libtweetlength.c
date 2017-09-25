@@ -250,7 +250,6 @@ parse_link (GArray      *entities,
   guint start_token = *current_position;
   guint end_token;
 
-  // TODO: There are probably more protocols supported...
   t = &tokens[i];
 
   if (t->type != TOK_TEXT) {
@@ -267,7 +266,6 @@ parse_link (GArray      *entities,
 
     t = &tokens[i + 1];
     if (t->type != TOK_SLASH) {
-
       return FALSE;
     }
     i ++;
@@ -301,7 +299,6 @@ parse_link (GArray      *entities,
     dot_index ++;
   }
   g_debug ("dot index: %u", dot_index);
-  g_debug ("n_tokens: %u", (guint)n_tokens);
 
   if (dot_index == n_tokens - 1) {
     return FALSE;
