@@ -355,6 +355,47 @@ parse_link (GArray      *entities,
   return TRUE;
 }
 
+static gboolean
+parse_mention (GArray      *entities,
+               const Token *tokens,
+               gsize        n_tokens,
+               guint       *current_position)
+{
+  const Token *t;
+  gsize i = *current_position;
+  guint start_token;
+  guint end_token;
+
+  t = &tokens[i];
+  g_assert (t->type == TOK_AT);
+  start_token = i;
+
+
+  //skip @
+  i ++;
+  t = &tokens[i];
+  if (t->type != TOK_TEXT) {
+    return FALSE;
+  }
+
+  end_token = i;
+
+  g_assert (end_token < n_tokens);
+
+  // Simply add up all the lengths
+  gsize length_in_bytes = 0;
+  const char *first_byte = tokens[start_token].start;
+  for (i = start_token; i <= end_token; i ++) {
+    length_in_bytes += tokens[i].length_in_bytes;
+  }
+
+  emplace_entity (entities, ENT_MENTION, first_byte, length_in_bytes);
+
+  *current_position = end_token + 1; // Hop to the next token!
+
+  return TRUE;
+}
+
 /*
  * parse:
  *
@@ -373,6 +414,12 @@ parse (const Token *tokens,
     // We always have to do this since links can begin with whatever word
     if (parse_link (entities, tokens, n_tokens, &i)) {
       continue;
+    }
+
+    if (token->type == TOK_AT) {
+      if (parse_mention (entities, tokens, n_tokens, &i)) {
+        continue;
+      }
     }
 
     emplace_entity (entities, ENT_TEXT, token->start, token->length_in_bytes);
