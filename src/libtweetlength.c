@@ -238,6 +238,80 @@ tokenize (const char *input,
   return g_steal_pointer (&tokens);
 }
 
+static gboolean
+parse_link_tail (GArray      *entities,
+                 const Token *tokens,
+                 gsize        n_tokens,
+                 guint       *current_position)
+{
+  guint i = *current_position;
+  const Token *t;
+
+  g_debug ("--------");
+  g_debug ("n_tokens; %u", (guint) n_tokens);
+
+  gsize paren_level = 0;
+  int first_paren_index = -1;
+  // XXX This just reads until the next whitespace but ignores that not everything in there might belong tot he link
+  for (;;) {
+    t = &tokens[i];
+
+    if (t->type == TOK_WHITESPACE) {
+      break;
+    }
+
+    g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s", i, t->type, (guint)t->length_in_bytes,
+         (int)t->length_in_bytes, t->start);
+    if (tokens[i].type == TOK_OPEN_PAREN) {
+
+      if (first_paren_index == -1) {
+        first_paren_index = i;
+        g_debug ("First paren index: %d", (int)first_paren_index);
+      }
+      paren_level ++;
+      if (paren_level == 3) {
+        break;
+      }
+    } else if (tokens[i].type == TOK_CLOSE_PAREN) {
+      if (first_paren_index == -1) {
+        first_paren_index = i;
+        g_debug ("First paren index: %d", (int)first_paren_index);
+      }
+      g_debug ("Close paren");
+      paren_level --;
+    }
+
+    i ++;
+
+    if (i == n_tokens) {
+      i --;
+      break;
+    }
+
+    g_debug ("i now: %u", i);
+  }
+
+  g_debug ("After i: %u", i);
+  g_debug ("paren level: %d", (int)paren_level);
+  if (paren_level != 0) {
+    g_assert (first_paren_index != -1);
+    i = first_paren_index - 1; // Before that paren
+  }
+
+  t = &tokens[i];
+  /* Whatever happened, don't count trailing punctuation */
+  if (t->type == TOK_QUESTIONMARK) {
+    // TODO: We should probably have a more generic way of identifying "punctuation"
+    i --;
+  }
+
+
+  *current_position = i;
+
+  return TRUE;
+}
+
+
 // Returns whether a link has been parsed or not.
 static gboolean
 parse_link (GArray      *entities,
@@ -328,22 +402,18 @@ parse_link (GArray      *entities,
         tokens[i + 1].type == TOK_QUESTIONMARK) {
       i ++;
 
-      if (i == n_tokens - 1) {
-        // The last token (slash or questionmark) was the last one!
-        if (tokens[i].type == TOK_QUESTIONMARK) {
-          i --; // Trailing questionmark is not part of the link...
+      if (i < n_tokens - 1) {
+        if (!parse_link_tail (entities, tokens, n_tokens, &i)) {
+          return FALSE;
         }
-
-      } else {
-        // There is more at the end!
-        while (i < n_tokens - 1 && tokens[i].type != TOK_WHITESPACE) {
-          i ++;
-        }
-
+      } else if (tokens[i].type == TOK_QUESTIONMARK) {
+        // Trailing questionmark is not part of the link
+        i --;
       }
     }
   }
 
+  g_debug ("end_token = i = %u", i);
   end_token = i;
   g_assert (end_token < n_tokens);
 

@@ -80,15 +80,24 @@ advanced_links (void)
   g_assert_cmpint (tl_count_characters ("foobar.com::8080/foo.html"), ==, 23 + 15);
   g_assert_cmpint (tl_count_characters ("http://foobar.com:abc/bla.html"), ==, 36);
 
+  // Non-balanced parentheses, not part of the link
+  g_assert_cmpint (tl_count_characters ("twitter.com/foo.html)"), ==, 24);
+  g_assert_cmpint (tl_count_characters ("twitter.com/foo.html?"), ==, 24);
+  g_assert_cmpint (tl_count_characters ("twitter.com/foo(.html)"), ==, 23); // balanced!
+
+  // Should NOT be links.
+  g_assert_cmpint (tl_count_characters ("foo:test@example.com"), ==, 20);
+  g_assert_cmpint (tl_count_characters ("test@example.com"), ==, 16);\
+
+  // https://github.com/baedert/corebird/issues/471
+  g_assert_cmpint (tl_count_characters ("My build of @Corebird (https://software.opensuse.org/download.html?project=home%3AIBBoard%3Adesktop&package=corebird) now comes with more theme compatibility for Adwaita-compliant themes"), ==, 140 - 24);
+
+
 
   // XXX ALL of these are noted as links in [1] but twitter.com says no FFS
   /*g_assert_cmpint (tl_count_characters ("http://user:PASSW0RD@example.com/"), ==, 23);*/
   /*g_assert_cmpint (tl_count_characters ("http://user:PASSW0RD@example.com:8080/login.php"), ==, 23);*/
   /*g_assert_cmpint (tl_count_characters ("http://user:PASSW0RD@example.com:8080/login.php"), ==, 23);*/
-
-  // Should NOT be links.
-  g_assert_cmpint (tl_count_characters ("foo:test@example.com"), ==, 20);
-  g_assert_cmpint (tl_count_characters ("test@example.com"), ==, 16);
 
   // [1] https://github.com/twitter/twitter-text/blob/master/conformance/validate.yml
 }
