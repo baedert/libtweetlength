@@ -639,10 +639,7 @@ tl_extract_entities_n (const char *input,
       case TL_ENT_LINK:
       case TL_ENT_HASHTAG:
       case TL_ENT_MENTION:
-        result_entities[result_index].type = e->type;
-        result_entities[result_index].start = e->start;
-        // TODO: we can probably just use memcpy here and be done!
-
+        memcpy (&result_entities[result_index], e, sizeof (TlEntity));
         result_index ++;
       break;
 
