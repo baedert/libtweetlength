@@ -299,8 +299,8 @@ parse_link (GArray      *entities,
     }
     dot_index ++;
   }
-  /*g_debug ("dot index: %u", dot_index);*/
-  /*g_debug ("n_tokens: %u", (guint)n_tokens);*/
+  g_debug ("dot index: %u", dot_index);
+  g_debug ("n_tokens: %u", (guint)n_tokens);
 
   if (dot_index == n_tokens - 1) {
     return FALSE;
@@ -314,7 +314,6 @@ parse_link (GArray      *entities,
     if (tokens[i + 1].type != TOK_NUMBER) {
       // According to twitter.com, the link reaches until before the COLON
       i --;
-      /*return FALSE;*/
     } else {
       // Skip port number
       i ++;
@@ -432,8 +431,8 @@ tl_count_characters_n (const char *input,
                        gsize       length_in_bytes)
 {
   GArray *tokens;
-  gsize n_tokens;
   const Token *token_array;
+  gsize n_tokens;
   GArray *entities;
   gsize length;
 
@@ -443,7 +442,7 @@ tl_count_characters_n (const char *input,
 
   // From here on, input/length_in_bytes are trusted to be OK
 
-  /*g_debug ("------- INPUT: %s %p (Bytes: %u)-------", input, input, (guint) length_in_bytes); // XXX Expected to be NUL-terminated*/
+  g_debug ("------- INPUT: %s %p (Bytes: %u)-------", input, input, (guint) length_in_bytes); // XXX Expected to be NUL-terminated
   tokens = tokenize (input, length_in_bytes);
   /*for (guint i = 0; i < tokens->len; i ++) {*/
     /*const Token *t = &g_array_index (tokens, Token, i);*/

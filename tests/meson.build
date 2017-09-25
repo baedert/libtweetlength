@@ -1,7 +1,8 @@
 
 
 tests = [
-  'length'
+  'length',
+  'entities'
 ]
 
 foreach test_name : tests
