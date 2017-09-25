@@ -256,6 +256,11 @@ parse_link (GArray      *entities,
     return FALSE;
   }
 
+  // Lookbehind: Token before may not be an @, they are not supported.
+  if (i > 0 && tokens[i - 1].type == TOK_AT) {
+    return FALSE;
+  }
+
   if (token_is_protocol (t)) {
     // These are all optional!
     t = &tokens[i + 1];
@@ -280,13 +285,8 @@ parse_link (GArray      *entities,
   // Now read until .TLD
   guint dot_index = i;
   while (dot_index < n_tokens - 1) { // -1 so we can do +1 in the loop body!
-    // TODO: We just skip all of these here, since we need it for username/port links.
-    //       There are probably not all supported though, like "::" inside a url...
     if (tokens[dot_index].type != TOK_TEXT &&
-        tokens[dot_index].type != TOK_DOT &&
-        tokens[dot_index].type != TOK_COLON &&
-        tokens[dot_index].type != TOK_NUMBER &&
-        tokens[dot_index].type != TOK_AT) {
+        tokens[dot_index].type != TOK_DOT) {
       return FALSE;
     }
 
@@ -583,21 +583,21 @@ tl_count_characters_n (const char *input,
 
   g_debug ("------- INPUT: %s %p (Bytes: %u)-------", input, input, (guint) length_in_bytes); // XXX Expected to be NUL-terminated
   tokens = tokenize (input, length_in_bytes);
-  /*for (guint i = 0; i < tokens->len; i ++) {*/
-    /*const Token *t = &g_array_index (tokens, Token, i);*/
-    /*g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s", i, t->type, (guint)t->length_in_bytes,*/
-               /*(int)t->length_in_bytes, t->start);*/
-  /*}*/
+  for (guint i = 0; i < tokens->len; i ++) {
+    const Token *t = &g_array_index (tokens, Token, i);
+    g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s", i, t->type, (guint)t->length_in_bytes,
+               (int)t->length_in_bytes, t->start);
+  }
 
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
 
   entities = parse (token_array, n_tokens, NULL);
-  /*for (guint i = 0; i < entities->len; i ++) {*/
-    /*const TlEntity *e = &g_array_index (entities, TlEntity, i);*/
-    /*g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u", i, (int)e->length_in_bytes, e->start,*/
-               /*e->type, (guint)e->length_in_bytes, (guint)entity_length_in_characters (e));*/
-  /*}*/
+  for (guint i = 0; i < entities->len; i ++) {
+    const TlEntity *e = &g_array_index (entities, TlEntity, i);
+    g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u", i, (int)e->length_in_bytes, e->start,
+               e->type, (guint)e->length_in_bytes, (guint)entity_length_in_characters (e));
+  }
 
   length = count_entities_in_characters (entities);
   g_array_free (entities, TRUE);
