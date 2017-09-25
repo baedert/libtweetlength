@@ -89,6 +89,17 @@ mentions (void)
 
   g_free (entities);
 
+  entities = tl_extract_entities ("@username email me @test@example.com", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 9);
+
+  g_free (entities);
+
+
+
   // [1] https://github.com/twitter/twitter-text/blob/master/conformance/validate.yml
 }
 

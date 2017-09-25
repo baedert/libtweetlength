@@ -684,11 +684,11 @@ tl_extract_entities_n (const char *input,
   *out_text_length = count_entities_in_characters (entities);
   g_free ((char *)token_array);
 
-  /*for (guint i = 0; i < entities->len; i ++) {*/
-    /*const TlEntity *e = &g_array_index (entities, TlEntity, i);*/
-    /*g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u, start character: %u", i, (int)e->length_in_bytes, e->start,*/
-               /*e->type, (guint)e->length_in_bytes, (guint)entity_length_in_characters (e), (guint)e->start_character_index);*/
-  /*}*/
+  for (guint i = 0; i < entities->len; i ++) {
+    const TlEntity *e = &g_array_index (entities, TlEntity, i);
+    g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u, start character: %u", i, (int)e->length_in_bytes, e->start,
+               e->type, (guint)e->length_in_bytes, (guint)entity_length_in_characters (e), (guint)e->start_character_index);
+  }
 
   // Only pass mentions, hashtags and links out
   result_entities = g_malloc (sizeof (TlEntity) * n_relevant_entities);
