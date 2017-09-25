@@ -99,12 +99,13 @@ emplace_token (GArray     *array,
   t->length_in_characters = length_in_characters;
 }
 
-static inline TlEntity *
+static inline void
 emplace_entity (GArray     *array,
                 guint       entity_type,
                 const char *entity_start,
-                gsize       entity_length,
-                gsize       entity_character_start)
+                gsize       entity_length_in_bytes,
+                gsize       entity_character_start,
+                gsize       entity_length_in_characters)
 {
   TlEntity *e;
 
@@ -113,10 +114,9 @@ emplace_entity (GArray     *array,
 
   e->type = entity_type;
   e->start = entity_start;
-  e->length_in_bytes = entity_length;
+  e->length_in_bytes = entity_length_in_bytes;
   e->start_character_index = entity_character_start;
-
-  return e;
+  e->length_in_characters = entity_length_in_characters;
 }
 
 static inline gboolean
@@ -350,16 +350,19 @@ parse_link (GArray      *entities,
 
   // Simply add up all the lengths
   gsize length_in_bytes = 0;
+  gsize length_in_characters = 0;
   const char *first_byte = tokens[start_token].start;
   for (i = start_token; i <= end_token; i ++) {
     length_in_bytes += tokens[i].length_in_bytes;
+    length_in_characters += tokens[i].length_in_characters;
   }
 
   emplace_entity (entities,
                   TL_ENT_LINK,
                   first_byte,
                   length_in_bytes,
-                  tokens[start_token].start_character_index);
+                  tokens[start_token].start_character_index,
+                  length_in_characters);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -394,16 +397,19 @@ parse_mention (GArray      *entities,
 
   // Simply add up all the lengths
   gsize length_in_bytes = 0;
+  gsize length_in_characters = 0;
   const char *first_byte = tokens[start_token].start;
   for (i = start_token; i <= end_token; i ++) {
     length_in_bytes += tokens[i].length_in_bytes;
+    length_in_characters += tokens[i].length_in_characters;
   }
 
   emplace_entity (entities,
                   TL_ENT_MENTION,
                   first_byte,
                   length_in_bytes,
-                  tokens[start_token].start_character_index);
+                  tokens[start_token].start_character_index,
+                  length_in_characters);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -438,16 +444,19 @@ parse_hashtag (GArray      *entities,
 
   // Simply add up all the lengths
   gsize length_in_bytes = 0;
+  gsize length_in_characters = 0;
   const char *first_byte = tokens[start_token].start;
   for (i = start_token; i <= end_token; i ++) {
     length_in_bytes += tokens[i].length_in_bytes;
+    length_in_characters += tokens[i].length_in_characters;
   }
 
   emplace_entity (entities,
                   TL_ENT_HASHTAG,
                   first_byte,
                   length_in_bytes,
-                  tokens[start_token].start_character_index);
+                  tokens[start_token].start_character_index,
+                  length_in_characters);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -497,7 +506,8 @@ parse (const Token *tokens,
                     TL_ENT_TEXT,
                     token->start,
                     token->length_in_bytes,
-                    token->start_character_index);
+                    token->start_character_index,
+                    token->length_in_characters);
 
     i ++;
   }
@@ -649,12 +659,11 @@ tl_extract_entities_n (const char *input,
 
   tokens = tokenize (input, length_in_bytes);
 
-  /*for (guint i = 0; i < tokens->len; i ++) {*/
-    /*const Token *t = &g_array_index (tokens, Token, i);*/
-    /*g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s, start char: %u", i, t->type, (guint)t->length_in_bytes,*/
-               /*(int)t->length_in_bytes, t->start, (guint)t->start_character_index);*/
-  /*}*/
-
+  for (guint i = 0; i < tokens->len; i ++) {
+    const Token *t = &g_array_index (tokens, Token, i);
+    g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s, start char: %u, chars: %u", i, t->type, (guint)t->length_in_bytes,
+               (int)t->length_in_bytes, t->start, (guint)t->start_character_index, (guint)t->length_in_characters);
+  }
 
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
