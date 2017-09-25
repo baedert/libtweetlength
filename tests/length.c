@@ -84,6 +84,9 @@ advanced_links (void)
   g_assert_cmpint (tl_count_characters ("twitter.com/foo.html)"), ==, 24);
   g_assert_cmpint (tl_count_characters ("twitter.com/foo.html?"), ==, 24);
   g_assert_cmpint (tl_count_characters ("twitter.com/foo(.html)"), ==, 23); // balanced!
+  g_assert_cmpint (tl_count_characters ("twitter.com/foo.html((a)"), ==, 27);
+  g_assert_cmpint (tl_count_characters ("twitter.com/foo.html((a))"), ==, 23);
+  g_assert_cmpint (tl_count_characters ("twitter.com/foo.html(((a)))"), ==, 30);
 
   // Should NOT be links.
   g_assert_cmpint (tl_count_characters ("foo:test@example.com"), ==, 20);
