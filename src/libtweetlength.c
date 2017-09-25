@@ -119,8 +119,9 @@ token_is_tld (const Token *t)
 {
   guint i;
 
-  if (t->length_in_bytes > MAX_TLD_LENGTH)
+  if (t->length_in_bytes > MAX_TLD_LENGTH) {
     return FALSE;
+  }
 
   for (i = 0; i < G_N_ELEMENTS (TLDS); i ++) {
     if (strncasecmp (t->start, TLDS[i], t->length_in_bytes) == 0) {
@@ -151,7 +152,7 @@ token_is_protocol (const Token *t)
 static inline gboolean
 char_splits (guchar c)
 {
-  switch(c) {
+  switch (c) {
     case ',':
     case '.':
     case '/':
