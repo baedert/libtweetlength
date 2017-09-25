@@ -27,12 +27,6 @@ typedef struct {
   gsize length_in_bytes;
 } Token;
 
-typedef struct {
-  guint type;
-  const char *start;
-  gsize length_in_bytes;
-} Entity;
-
 enum {
   TOK_TEXT = 1,
   TOK_NUMBER,
@@ -109,16 +103,16 @@ emplace_token (GArray     *array,
   return t;
 }
 
-static inline Entity *
+static inline TlEntity *
 emplace_entity (GArray     *array,
                 guint       entity_type,
                 const char *entity_start,
                 gsize       entity_length)
 {
-  Entity *e;
+  TlEntity *e;
 
   g_array_set_size (array, array->len + 1);
-  e = &g_array_index (array, Entity, array->len - 1);
+  e = &g_array_index (array, TlEntity, array->len - 1);
 
   e->type = entity_type;
   e->start = entity_start;
@@ -188,7 +182,7 @@ char_splits (guchar c)
 }
 
 static inline gsize
-entity_length_in_characters (const Entity *e)
+entity_length_in_characters (const TlEntity *e)
 {
   switch (e->type) {
     case ENT_LINK:
@@ -370,7 +364,7 @@ static GArray *
 parse (const Token *tokens,
        gsize        n_tokens)
 {
-  GArray *entities = g_array_new (FALSE, TRUE, sizeof (Entity));
+  GArray *entities = g_array_new (FALSE, TRUE, sizeof (TlEntity));
   guint i = 0;
 
   while (i < n_tokens) {
@@ -396,7 +390,7 @@ count_entities_in_characters (GArray *entities)
   gsize sum = 0;
 
   for (i = 0; i < entities->len; i ++) {
-    const Entity *e = &g_array_index (entities, Entity, i);
+    const TlEntity *e = &g_array_index (entities, TlEntity, i);
 
     sum += entity_length_in_characters (e);
   }
@@ -455,8 +449,8 @@ tl_count_characters_n (const char *input,
 
   entities = parse (token_array, n_tokens);
   /*for (guint i = 0; i < entities->len; i ++) {*/
-    /*const Entity *e = &g_array_index (entities, Entity, i);*/
-    /*g_debug ("Entity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u", i, (int)e->length_in_bytes, e->start,*/
+    /*const TlEntity *e = &g_array_index (entities, TlEntity, i);*/
+    /*g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u", i, (int)e->length_in_bytes, e->start,*/
                /*e->type, (guint)e->length_in_bytes, (guint)entity_length_in_characters (e));*/
   /*}*/
 
@@ -465,4 +459,62 @@ tl_count_characters_n (const char *input,
   g_free ((char *)token_array);
 
   return length;
+}
+
+TlEntity *
+tl_extract_entities (const char *input,
+                     gsize      *out_n_entities,
+                     gsize      *out_text_length)
+{
+  gsize dummy;
+
+  g_return_val_if_fail (out_n_entities != NULL, NULL);
+
+  if (input == NULL || input[0] == '\0') {
+    *out_n_entities = 0;
+    return NULL;
+  }
+
+  if (out_text_length == NULL) {
+    out_text_length = &dummy;
+  }
+
+  return tl_extract_entities_n (input, strlen (input), out_n_entities, out_text_length);
+}
+
+TlEntity *
+tl_extract_entities_n (const char *input,
+                       gsize       length_in_bytes,
+                       gsize      *out_n_entities,
+                       gsize      *out_text_length)
+{
+  GArray *tokens;
+  const Token *token_array;
+  gsize n_tokens;
+  GArray *entities;
+  gsize dummy;
+
+  g_return_val_if_fail (out_n_entities != NULL, NULL);
+
+  if (input == NULL || input[0] == '\0') {
+    return 0;
+  }
+
+  if (out_text_length == NULL) {
+    out_text_length = &dummy;
+  }
+
+  tokens = tokenize (input, length_in_bytes);
+
+  n_tokens = tokens->len;
+  token_array = (const Token *)g_array_free (tokens, FALSE);
+
+  entities = parse (token_array, n_tokens);
+
+  *out_text_length = count_entities_in_characters (entities);
+  g_free ((char *)token_array);
+
+  *out_n_entities = entities->len;
+
+  return (TlEntity *)g_array_free (entities, FALSE);
 }
