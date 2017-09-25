@@ -136,6 +136,18 @@ links (void)
 
   g_free (entities);
 
+  entities = tl_extract_entities ("twitter.c", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+
+  g_free (entities);
+
+  entities = tl_extract_entities ("http://", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+
+  g_free (entities);
+
   entities = tl_extract_entities ("foobar.com::8080/foo.html", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 1);
   g_assert_nonnull (entities);

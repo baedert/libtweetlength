@@ -335,7 +335,7 @@ parse_link (GArray      *entities,
   }
 
   if (token_is_protocol (t)) {
-    // These are all optional!
+    // need "://" now.
     t = &tokens[i + 1];
     if (t->type != TOK_COLON) {
       return FALSE;
@@ -350,6 +350,10 @@ parse_link (GArray      *entities,
 
     t = &tokens[i + 1];
     if (t->type != TOK_SLASH) {
+      return FALSE;
+    }
+    // If we are at the end now, this is not a link, just the protocol.
+    if (i + 1 == n_tokens - 1) {
       return FALSE;
     }
     i += 2; // Skip to token after second slash
