@@ -57,6 +57,15 @@ mentions (void)
   g_assert_cmpint (entities[0].length_in_characters, ==, 7);
 
   g_free (entities);
+
+  entities = tl_extract_entities ("@12345", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+
+  g_free (entities);
 }
 
 static void
