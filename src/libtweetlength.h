@@ -13,13 +13,13 @@ struct _TlEntity {
 };
 typedef struct _TlEntity TlEntity;
 
-enum {
+typedef enum {
   TL_ENT_TEXT = 1,
   TL_ENT_HASHTAG,
   TL_ENT_LINK,
   TL_ENT_MENTION,
   TL_ENT_WHITESPACE,
-};
+} TlEntityType;
 
 gsize      tl_count_characters   (const char *input);
 gsize      tl_count_characters_n (const char *input,
