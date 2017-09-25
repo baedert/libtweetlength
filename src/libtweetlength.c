@@ -252,7 +252,6 @@ parse_link_tail (GArray      *entities,
 
   gsize paren_level = 0;
   int first_paren_index = -1;
-  // XXX This just reads until the next whitespace but ignores that not everything in there might belong tot he link
   for (;;) {
     t = &tokens[i];
 
