@@ -296,7 +296,7 @@ parse_link (GArray      *entities,
   i = dot_index + 1;
 
   // If the next token is a colon, we are reading a port
-  if (tokens[i + 1].type == TOK_COLON) {
+  if (i < n_tokens - 1 && tokens[i + 1].type == TOK_COLON) {
     i ++; // i == COLON
     if (tokens[i + 1].type != TOK_NUMBER) {
       // According to twitter.com, the link reaches until before the COLON
