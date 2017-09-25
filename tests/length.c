@@ -66,10 +66,8 @@ static void
 advanced_links (void)
 {
   g_message ("\n");
-  /*
-   * TODO: We recognize this as a period followed by a link, while twitter.com recognized no link at all.
-   */
-  /*g_assert_cmpint (tl_count_characters (".twitter.com"), ==, 12);*/
+
+  g_assert_cmpint (tl_count_characters (".twitter.com"), ==, 12);
 
   // Some examples from https://github.com/twitter/twitter-text/blob/master/conformance/validate.yml
   g_assert_cmpint (tl_count_characters ("https://example.com/path/to/resource?search=foo&lang=en"), ==, 23);
@@ -80,13 +78,13 @@ advanced_links (void)
   g_assert_cmpint (tl_count_characters ("foobar.com:8080/foo.html"), ==, 23);
   g_assert_cmpint (tl_count_characters ("foobar.com:8080//foo.html"), ==, 23);
   g_assert_cmpint (tl_count_characters ("foobar.com::8080/foo.html"), ==, 23 + 15);
+  g_assert_cmpint (tl_count_characters ("http://foobar.com:abc/bla.html"), ==, 36);
 
 
   // XXX ALL of these are noted as links in [1] but twitter.com says no FFS
   /*g_assert_cmpint (tl_count_characters ("http://user:PASSW0RD@example.com/"), ==, 23);*/
   /*g_assert_cmpint (tl_count_characters ("http://user:PASSW0RD@example.com:8080/login.php"), ==, 23);*/
   /*g_assert_cmpint (tl_count_characters ("http://user:PASSW0RD@example.com:8080/login.php"), ==, 23);*/
-  /*g_assert_cmpint (tl_count_characters ("http://foobar.com:abc/bla.html"), ==, 36);*/
 
   // Should NOT be links.
   g_assert_cmpint (tl_count_characters ("foo:test@example.com"), ==, 20);

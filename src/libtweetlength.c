@@ -256,11 +256,6 @@ parse_link (GArray      *entities,
     return FALSE;
   }
 
-  // Lookbehind: Token before may not be an @, they are not supported.
-  if (i > 0 && tokens[i - 1].type == TOK_AT) {
-    return FALSE;
-  }
-
   if (token_is_protocol (t)) {
     // These are all optional!
     t = &tokens[i + 1];
@@ -280,6 +275,13 @@ parse_link (GArray      *entities,
       return FALSE;
     }
     i += 2; // Skip to token after second slash
+  } else {
+    // Lookbehind: Token before may not be an @, they are not supported.
+    if (i > 0 &&
+        (tokens[i - 1].type == TOK_AT ||
+         tokens[i - 1].type == TOK_DOT)) {
+      return FALSE;
+    }
   }
 
   // Now read until .TLD
