@@ -16,6 +16,7 @@ static const char *TLDS[] = {
 typedef struct {
   guint type;
   const char *start;
+  gsize start_character_index;
   gsize length_in_bytes;
 } Token;
 
@@ -78,10 +79,11 @@ token_type_from_char (gunichar c)
 
 }
 
-static inline Token *
+static inline void
 emplace_token (GArray     *array,
                const char *token_start,
-               gsize       token_length)
+               gsize       token_length,
+               gsize       start_character_index)
 {
   Token *t;
 
@@ -91,8 +93,7 @@ emplace_token (GArray     *array,
   t->type = token_type_from_char (token_start[0]);
   t->start = token_start;
   t->length_in_bytes = token_length;
-
-  return t;
+  t->start_character_index = start_character_index;
 }
 
 static inline TlEntity *
@@ -198,6 +199,7 @@ tokenize (const char *input,
 {
   GArray *tokens = g_array_new (FALSE, TRUE, sizeof (Token));
   const char *p = input;
+  gsize cur_character_index = 0;
 
   while (p - input < length_in_bytes) {
     const char *cur_start = p;
@@ -208,7 +210,8 @@ tokenize (const char *input,
     if (char_splits (cur_char)) {
       const char *old_p = p;
       p = g_utf8_next_char (p);
-      emplace_token (tokens, cur_start, p - old_p);
+      cur_character_index ++;
+      emplace_token (tokens, cur_start, p - old_p, cur_character_index);
       continue;
     }
 
@@ -217,9 +220,10 @@ tokenize (const char *input,
       p = g_utf8_next_char (p);
       cur_char = g_utf8_get_char (p);
       cur_length += p - old_p;
+      cur_character_index ++;
     } while (!char_splits (cur_char) && p - input < length_in_bytes);
 
-    emplace_token (tokens, cur_start, cur_length);
+    emplace_token (tokens, cur_start, cur_length, cur_character_index);
   }
 
   return g_steal_pointer (&tokens);
