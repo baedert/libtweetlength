@@ -384,12 +384,23 @@ parse_mention (GArray      *entities,
   g_assert (t->type == TOK_AT);
   start_token = i;
 
+  // Lookback at the previous token. If it was a text token
+  // without whitespace between, this is not going to be a mention...
+  if (i > 0 && tokens[i - 1].type == TOK_TEXT) {
+    return FALSE;
+  }
 
   //skip @
   i ++;
   t = &tokens[i];
   if (t->type != TOK_TEXT &&
       t->type != TOK_NUMBER) {
+    return FALSE;
+  }
+
+  // Mentions ending in an '@' are no mentions, e.g. @_@
+  if (i < n_tokens - 1 &&
+      tokens[i + 1].type == TOK_AT) {
     return FALSE;
   }
 
