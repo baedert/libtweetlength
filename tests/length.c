@@ -76,6 +76,12 @@ advanced_links (void)
   g_assert_cmpint (tl_count_characters ("http://twitter.com/#!/twitter"), ==, 23);
   g_assert_cmpint (tl_count_characters ("HTTPS://www.ExaMPLE.COM/index.html"), ==, 23);
 
+  // Port
+  g_assert_cmpint (tl_count_characters ("foobar.com:8080/foo.html"), ==, 23);
+  g_assert_cmpint (tl_count_characters ("foobar.com:8080//foo.html"), ==, 23);
+  g_assert_cmpint (tl_count_characters ("foobar.com::8080/foo.html"), ==, 23 + 15);
+
+
   // XXX ALL of these are noted as links in [1] but twitter.com says no FFS
   /*g_assert_cmpint (tl_count_characters ("http://user:PASSW0RD@example.com/"), ==, 23);*/
   /*g_assert_cmpint (tl_count_characters ("http://user:PASSW0RD@example.com:8080/login.php"), ==, 23);*/
