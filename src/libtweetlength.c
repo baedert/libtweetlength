@@ -361,7 +361,8 @@ parse_link (GArray      *entities,
     // Lookbehind: Token before may not be an @, they are not supported.
     if (i > 0 &&
         (tokens[i - 1].type == TOK_AT ||
-         tokens[i - 1].type == TOK_DOT)) {
+         tokens[i - 1].type == TOK_DOT ||
+         tokens[i - 1].type == TOK_SLASH)) {
       return FALSE;
     }
   }
