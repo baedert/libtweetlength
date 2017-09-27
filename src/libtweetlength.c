@@ -13,7 +13,7 @@ static struct {
   {3, "int"}, {3, "tel"}, {3, "gov"},
   {4, "sexy"}, {4, "name"}, {4, "info"}, {4, "jobs"}, {4, "post"}, {4, "aero"}, {4, "mobi"}, {4, "arpa"},
   {4, "coop"}, {4, "asia"},
-  {6, "museum"}, {6, "trabel"}
+  {6, "museum"}, {6, "travel"}
 };
 
 
