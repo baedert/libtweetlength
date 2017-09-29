@@ -4,7 +4,7 @@
 #define LINK_LENGTH 23
 
 // Keep this sorted by length!
-static struct {
+static const struct {
   size_t length;
   const char *str;
 } TLDS[] = {
