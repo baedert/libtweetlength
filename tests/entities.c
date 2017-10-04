@@ -177,6 +177,13 @@ links (void)
   g_assert_cmpint (entities[0].start_character_index, ==, 7);
 
   g_free (entities);
+
+  entities = tl_extract_entities ("foobar.co.uk", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+
+  g_free (entities);
 }
 
 static void
