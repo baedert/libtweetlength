@@ -1,21 +1,8 @@
 #include "libtweetlength.h"
+#include "data.h"
 #include <string.h>
 
 #define LINK_LENGTH 23
-
-// Keep this sorted by length!
-static const struct {
-  size_t length;
-  const char *str;
-} TLDS[] = {
-  {2, "ly"}, {2, "io"},
-  {3, "com"}, {3, "org"}, {3, "net"}, {3, "xxx"}, {3, "pro"}, {3, "edu"}, {3, "mil"}, {3, "biz"}, {3, "cat"},
-  {3, "int"}, {3, "tel"}, {3, "gov"},
-  {4, "sexy"}, {4, "name"}, {4, "info"}, {4, "jobs"}, {4, "post"}, {4, "aero"}, {4, "mobi"}, {4, "arpa"},
-  {4, "coop"}, {4, "asia"},
-  {6, "museum"}, {6, "travel"}
-};
-
 
 typedef struct {
   guint type;
@@ -128,13 +115,20 @@ token_is_tld (const Token *t)
 {
   guint i;
 
-  if (t->length_in_bytes > TLDS[G_N_ELEMENTS(TLDS) - 1].length) {
+  if (t->length_in_characters > GTLDS[G_N_ELEMENTS (GTLDS) - 1].length) {
     return FALSE;
   }
 
-  for (i = 0; i < G_N_ELEMENTS (TLDS); i ++) {
-    if (t->length_in_characters == TLDS[i].length &&
-        strncasecmp (t->start, TLDS[i].str, t->length_in_bytes) == 0) {
+  for (i = 0; i < G_N_ELEMENTS (GTLDS); i ++) {
+    if (t->length_in_characters == GTLDS[i].length &&
+        strncasecmp (t->start, GTLDS[i].str, t->length_in_bytes) == 0) {
+      return TRUE;
+    }
+  }
+
+  for (i = 0; i < G_N_ELEMENTS (CCTLDS); i ++) {
+    if (t->length_in_characters == CCTLDS[i].length &&
+        strncasecmp (t->start, CCTLDS[i].str, t->length_in_bytes) == 0) {
       return TRUE;
     }
   }
