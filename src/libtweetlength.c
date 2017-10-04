@@ -111,7 +111,8 @@ emplace_entity (GArray     *array,
 }
 
 static inline gboolean
-token_is_tld (const Token *t)
+token_is_tld (const Token *t,
+              gboolean     has_protocol)
 {
   guint i;
 
@@ -126,10 +127,12 @@ token_is_tld (const Token *t)
     }
   }
 
-  for (i = 0; i < G_N_ELEMENTS (CCTLDS); i ++) {
-    if (t->length_in_characters == CCTLDS[i].length &&
-        strncasecmp (t->start, CCTLDS[i].str, t->length_in_bytes) == 0) {
-      return TRUE;
+  if (has_protocol) {
+    for (i = 0; i < G_N_ELEMENTS (CCTLDS); i ++) {
+      if (t->length_in_characters == CCTLDS[i].length &&
+          strncasecmp (t->start, CCTLDS[i].str, t->length_in_bytes) == 0) {
+        return TRUE;
+      }
     }
   }
 
@@ -321,6 +324,7 @@ parse_link (GArray      *entities,
   const Token *t;
   guint start_token = *current_position;
   guint end_token;
+  gboolean has_protocol = FALSE;
 
   t = &tokens[i];
 
@@ -351,6 +355,7 @@ parse_link (GArray      *entities,
       return FALSE;
     }
     i += 2; // Skip to token after second slash
+    has_protocol = TRUE;
   } else {
     // Lookbehind: Token before may not be an @, they are not supported.
     if (i > 0 &&
@@ -372,7 +377,7 @@ parse_link (GArray      *entities,
     // The dot we look for is followed by a tld identifier such as "com"
     if (tokens[dot_index].type == TOK_DOT &&
         tokens[dot_index + 1].type == TOK_TEXT &&
-        token_is_tld (&tokens[dot_index + 1])) {
+        token_is_tld (&tokens[dot_index + 1], has_protocol)) {
       break;
     }
     dot_index ++;
