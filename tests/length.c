@@ -1,4 +1,5 @@
 #include "libtweetlength.h"
+#include "../src/data.h"
 
 static void
 empty (void)
@@ -130,6 +131,8 @@ int
 main (int argc, char **argv)
 {
   g_test_init (&argc, &argv, NULL);
+
+  g_assert (GTLDS[G_N_ELEMENTS (GTLDS) - 1].length >= CCTLDS[G_N_ELEMENTS (CCTLDS) - 1].length);
 
 #ifdef DEBUG
   g_setenv ("G_MESSAGES_DEBUG", "libtl", TRUE);
