@@ -51,6 +51,10 @@ basic_links (void)
   g_assert_cmpint (tl_count_characters ("https://twitter.com."), ==, 24);
   g_assert_cmpint (tl_count_characters ("https://twitter.com("), ==, 24);
 
+  // Neither is white space
+  g_assert_cmpint (tl_count_characters ("https://twitter.com "), ==, 24);
+  g_assert_cmpint (tl_count_characters ("https://twitter.com/ "), ==, 24);
+
   // Punctuation before...
   g_assert_cmpint (tl_count_characters (")https://twitter.com"), ==, 24);
   g_assert_cmpint (tl_count_characters ("?https://twitter.com"), ==, 24);
