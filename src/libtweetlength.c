@@ -144,6 +144,13 @@ token_is_tld (const Token *t,
     }
   }
 
+  for (i = 0; i < G_N_ELEMENTS (SPECIAL_CCTLDS); i ++) {
+    if (t->length_in_characters == SPECIAL_CCTLDS[i].length &&
+        strncasecmp (t->start, SPECIAL_CCTLDS[i].str, t->length_in_bytes) == 0) {
+      return TRUE;
+    }
+  }
+
   if (has_protocol) {
     for (i = 0; i < G_N_ELEMENTS (CCTLDS); i ++) {
       if (t->length_in_characters == CCTLDS[i].length &&

@@ -22,6 +22,14 @@
 static const struct {
   size_t length;
   const char *str;
+} SPECIAL_CCTLDS[] = {
+  {2, "co"},
+  {2, "tv"}
+};
+
+static const struct {
+  size_t length;
+  const char *str;
 } GTLDS[] = {
   {2, "삼성"},
   {2, "集团"},
