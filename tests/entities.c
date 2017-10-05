@@ -153,6 +153,34 @@ links (void)
 
   g_free (entities);
 
+  // Numbers at the start of domains are also valid - RFC 952 said no but RFC 1123 said yes
+  // https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_hostnames
+  entities = tl_extract_entities ("000example.com", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_LINK);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 14);
+
+  g_free (entities);
+
+  // That also allows completely numeric domains (e.g. "123.[many-tlds]" is already registered)
+  entities = tl_extract_entities ("123.com", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_LINK);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 7);
+
+  g_free (entities);
+
+  // But make sure that we don't allow numeric TLD
+  entities = tl_extract_entities ("http://example.000", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+
+  g_free (entities);
+
   entities = tl_extract_entities ("twitter.c", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 0);
   g_assert_null (entities);
