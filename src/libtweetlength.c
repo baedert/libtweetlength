@@ -377,10 +377,6 @@ parse_link (GArray      *entities,
 
   t = &tokens[i];
 
-  if (t->type != TOK_TEXT && t->type != TOK_NUMBER) {
-    return FALSE;
-  }
-
   if (token_is_protocol (t)) {
     // need "://" now.
     t = &tokens[i + 1];
@@ -417,31 +413,42 @@ parse_link (GArray      *entities,
     }
   }
 
-  // Now read until .TLD
-  guint dot_index = i;
-  g_debug ("Looking for TLD starting from %u", dot_index);
-  while (dot_index < n_tokens - 1) { // -1 so we can do +1 in the loop body!
-    g_debug ("Trying token %u", dot_index);
-    if (tokens[dot_index].type != TOK_DOT &&
-        token_in (&tokens[dot_index], INVALID_URL_CHARS)) {
-      return FALSE;
-    }
+  // Make sure that we have the first part of a domain
+  if (tokens[i].type != TOK_TEXT &&
+      tokens[i].type != TOK_NUMBER) {
+        return FALSE;
+  }
 
-    // The dot we look for is followed by a tld identifier such as "com"
-    if (tokens[dot_index].type == TOK_DOT &&
-        tokens[dot_index + 1].type == TOK_TEXT &&
-        token_is_tld (&tokens[dot_index + 1], has_protocol)) {
+  guint scan_position = i;
+  guint tld_index = 0;
+
+  g_debug ("Looking for TLD starting from %u", scan_position);
+
+  // Now read until .TLD
+  // We're stepping two at a time to look for the repeating dot and then text/number
+  // As we're looking ahead then we need to stop two items before the end
+  while (scan_position < n_tokens - 2) {
+    g_debug ("Trying token %u and %u", scan_position + 1, scan_position + 2);
+    if (tokens[scan_position + 1].type == TOK_DOT &&
+         (tokens[scan_position + 2].type == TOK_TEXT ||
+          tokens[scan_position + 2].type == TOK_NUMBER)) {
+      scan_position += 2;
+
+      if (token_is_tld (&tokens[scan_position], has_protocol)) {
+        tld_index = scan_position;
+      }
+    } else {
       break;
     }
-    dot_index ++;
   }
-  g_debug ("dot index: %u", dot_index);
+  g_debug ("tld_index: %u", tld_index);
 
-  if (dot_index == n_tokens - 1) {
+  if (tld_index != scan_position ||
+      tld_index == 0) {
     return FALSE;
   }
 
-  i = dot_index + 1;
+  i = tld_index;
 
   // If the next token is a colon, we are reading a port
   if (i < n_tokens - 1 && tokens[i + 1].type == TOK_COLON) {
