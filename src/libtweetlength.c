@@ -412,7 +412,8 @@ parse_link (GArray      *entities,
         (tokens[i - 1].type == TOK_AT ||
          tokens[i - 1].type == TOK_DOT ||
          tokens[i - 1].type == TOK_SLASH ||
-         tokens[i - 1].type == TOK_DASH)) {
+         tokens[i - 1].type == TOK_DASH ||
+         tokens[i - 1].type == TOK_UNDERSCORE)) {
       return FALSE;
     }
   }
@@ -424,7 +425,7 @@ parse_link (GArray      *entities,
   }
 
   guint scan_position = i;
-  guint tld_index = 0;
+  guint tld_index = i;
 
   g_debug ("Looking for TLD starting from %u", scan_position);
 
@@ -448,7 +449,7 @@ parse_link (GArray      *entities,
   g_debug ("tld_index: %u", tld_index);
 
   if (tld_index != scan_position ||
-      tld_index == 0) {
+      tld_index == i) {
     return FALSE;
   }
 
