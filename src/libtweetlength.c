@@ -42,6 +42,7 @@ enum {
   TOK_HASH,
   TOK_AT,
   TOK_EQUALS,
+  TOK_DASH,
 };
 
 static inline guint
@@ -66,6 +67,8 @@ token_type_from_char (gunichar c)
       return TOK_QUESTIONMARK;
     case '=':
       return TOK_EQUALS;
+    case '-':
+      return TOK_DASH;
     case '0':
     case '1':
     case '2':
@@ -405,10 +408,12 @@ parse_link (GArray      *entities,
     has_protocol = TRUE;
   } else {
     // Lookbehind: Token before may not be an @, they are not supported.
+    // TODO: There's a list of valid before-url chars and we should just use that here.
     if (i > 0 &&
         (tokens[i - 1].type == TOK_AT ||
          tokens[i - 1].type == TOK_DOT ||
-         tokens[i - 1].type == TOK_SLASH)) {
+         tokens[i - 1].type == TOK_SLASH ||
+         tokens[i - 1].type == TOK_DASH)) {
       return FALSE;
     }
   }
