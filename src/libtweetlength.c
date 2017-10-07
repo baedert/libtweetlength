@@ -43,6 +43,7 @@ enum {
   TOK_AT,
   TOK_EQUALS,
   TOK_DASH,
+  TOK_UNDERSCORE,
 };
 
 static inline guint
@@ -69,6 +70,8 @@ token_type_from_char (gunichar c)
       return TOK_EQUALS;
     case '-':
       return TOK_DASH;
+    case '_':
+      return TOK_UNDERSCORE;
     case '0':
     case '1':
     case '2':
@@ -219,6 +222,7 @@ char_splits (gunichar c)
     case '@':
     case '#':
     case '-':
+    case '_':
     case '\n':
     case '\t':
     case '\0':
@@ -527,11 +531,16 @@ parse_mention (GArray      *entities,
     return FALSE;
   }
 
-  //skip @
-  i ++;
-  t = &tokens[i];
-  if (t->type != TOK_TEXT &&
-      t->type != TOK_NUMBER) {
+  while (i < n_tokens - 1 &&
+    (
+      tokens[i + 1].type == TOK_TEXT ||
+      tokens[i + 1].type == TOK_NUMBER ||
+      tokens[i + 1].type == TOK_UNDERSCORE
+    )) {
+    i ++;
+  }
+
+  if (i == start_token) {
     return FALSE;
   }
 
