@@ -336,7 +336,7 @@ links (void)
   entities = tl_extract_entities ("I really like http://t.co/pbY2NfTZ's website", &n_entities, &text_length);
   g_assert_cmpint (n_entities, ==, 1);
   g_assert_nonnull (entities);
-  g_assert_cmpint (entities[0].start_character_index, ==, 15);
+  g_assert_cmpint (entities[0].start_character_index, ==, 14);
   g_assert_cmpint (entities[0].length_in_characters, ==, 20);
   g_free (entities);
 
@@ -344,13 +344,12 @@ links (void)
   g_assert_cmpint (n_entities, ==, 1);
   g_assert_nonnull (entities);
   g_assert_cmpint (entities[0].start_character_index, ==, 9);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 20);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 21);
   g_free (entities);
 
-
-  // The it.so one is not a valid link
+  // The it.so ones are not valid links
   entities = tl_extract_entities ("http://twitter.com\nhttp://example.com\nhttp://example.com/path\nexample.com/path\nit.so\nit.so/abcde", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 5);
+  g_assert_cmpint (n_entities, ==, 4);
   g_assert_nonnull (entities);
   g_free (entities);
 
