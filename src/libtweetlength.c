@@ -202,7 +202,7 @@ token_is_protocol (const Token *t)
 }
 
 static inline gboolean
-char_splits (guchar c)
+char_splits (gunichar c)
 {
   switch (c) {
     case ',':
