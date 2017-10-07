@@ -282,6 +282,8 @@ parse_link_tail (GArray      *entities,
     t = &tokens[i];
 
     if (t->type == TOK_WHITESPACE) {
+      i --;
+      g_debug("Found whitespace - backtracked one to %d", i);
       break;
     }
 
