@@ -103,7 +103,6 @@ token_in (const Token *t,
 
   for (i = 0; i < haystack_len; i ++) {
     if (haystack[i] == t->start[0]) {
-      g_message ("Found '%c'", haystack[i]);
       return TRUE;
     }
   }

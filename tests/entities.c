@@ -142,6 +142,7 @@ static void
 links (void)
 {
   gsize n_entities;
+  gsize text_length;
   TlEntity *entities;
 
   entities = tl_extract_entities ("twitter.com", &n_entities, NULL);
@@ -248,8 +249,108 @@ links (void)
   entities = tl_extract_entities ("http://-foobar.com", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 0);
   g_assert_null (entities);
-
   g_free (entities);
+
+  entities = tl_extract_entities ("http://foobar-.com", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+  g_free (entities);
+
+  entities = tl_extract_entities ("http://foobar.c_o_m", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+  g_free (entities);
+
+  // TODO
+  /*entities = tl_extract_entities ("http://foo_bar.com", &n_entities, NULL);*/
+  /*g_assert_cmpint (n_entities, ==, 0);*/
+  /*g_assert_null (entities);*/
+  /*g_free (entities);*/
+
+  // TODO
+  /*entities = tl_extract_entities ("http://trailingunderscore_.foobar.com", &n_entities, NULL);*/
+  /*g_assert_cmpint (n_entities, ==, 0);*/
+  /*g_assert_null (entities);*/
+  /*g_free (entities);*/
+
+  // TODO
+  /*entities = tl_extract_entities ("http://_leadingunderscore.foobar.com", &n_entities, NULL);*/
+  /*g_assert_cmpint (n_entities, ==, 0);*/
+  /*g_assert_null (entities);*/
+  /*g_free (entities);*/
+
+  entities = tl_extract_entities ("http://www.bestbuy.com/site/Currie+Technologies+-+Ezip+400+Scooter/9885188.p?id=1218189013070&skuId=9885188", &n_entities, &text_length);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (text_length, ==, 23);
+  g_free (entities);
+
+  // TODO
+  /*entities = tl_extract_entities ("http://www.foo.org.za/foo/bar/688.1", &n_entities, &text_length);*/
+  /*g_assert_cmpint (n_entities, ==, 1);*/
+  /*g_assert_nonnull (entities);*/
+  /*g_assert_cmpint (entities[0].start_character_index, ==, 0);*/
+  /*g_assert_cmpint (text_length, ==, 23);*/
+  /*g_free (entities);*/
+
+  // TODO
+  /*entities = tl_extract_entities ("http://www.foo.com/bar-path/some.stm?param1=foo;param2=P1|0||P2|0", &n_entities, &text_length);*/
+  /*g_assert_cmpint (n_entities, ==, 1);*/
+  /*g_assert_nonnull (entities);*/
+  /*g_assert_cmpint (entities[0].start_character_index, ==, 0);*/
+  /*g_assert_cmpint (text_length, ==, 23);*/
+  /*g_free (entities);*/
+
+  // TODO
+  /*entities = tl_extract_entities ("http://www.cp.sc.edu/events/65", &n_entities, &text_length);*/
+  /*g_assert_cmpint (n_entities, ==, 1);*/
+  /*g_assert_nonnull (entities);*/
+  /*g_assert_cmpint (entities[0].start_character_index, ==, 0);*/
+  /*g_assert_cmpint (text_length, ==, 23);*/
+  /*g_free (entities);*/
+
+  // TODO
+  /*entities = tl_extract_entities ("I really like http://t.co/pbY2NfTZ's website", &n_entities, &text_length);*/
+  /*g_assert_cmpint (n_entities, ==, 1);*/
+  /*g_assert_nonnull (entities);*/
+  /*g_assert_cmpint (entities[0].start_character_index, ==, 15);*/
+  /*g_assert_cmpint (entities[0].length_in_characters, ==, 20);*/
+  /*g_free (entities);*/
+
+  // TODO
+  /*entities = tl_extract_entities ("Trailing http://t.co/pbY2NfTZ- hyphen", &n_entities, &text_length);*/
+  /*g_assert_cmpint (n_entities, ==, 1);*/
+  /*g_assert_nonnull (entities);*/
+  /*g_assert_cmpint (entities[0].start_character_index, ==, 9);*/
+  /*g_assert_cmpint (entities[0].length_in_characters, ==, 20);*/
+  /*g_free (entities);*/
+
+
+  // TODO
+  // The it.so one is not a valid link
+  /*entities = tl_extract_entities ("http://twitter.com\nhttp://example.com\nhttp://example.com/path\nexample.com/path\nit.so\nit.so/abcde", &n_entities, &text_length);*/
+  /*g_assert_cmpint (n_entities, ==, 5);*/
+  /*g_assert_nonnull (entities);*/
+  /*g_free (entities);*/
+
+  // TODO
+  /*entities = tl_extract_entities ("$http://twitter.com $twitter.com $http://t.co/abcde $t.co/abcde $t.co $TVI.CA $RBS.CA", &n_entities, NULL);*/
+  /*g_assert_cmpint (n_entities, ==, 0);*/
+  /*g_assert_null (entities);*/
+  /*g_free (entities);*/
+
+  // TODO
+  /*entities = tl_extract_entities ("john.doe.gov@gmail.com", &n_entities, NULL);*/
+  /*g_assert_cmpint (n_entities, ==, 0);*/
+  /*g_assert_null (entities);*/
+  /*g_free (entities);*/
+
+  // TODO
+  /*entities = tl_extract_entities ("http://www.foo.com?referer=https://t.co/abcde", &n_entities, NULL);*/
+  /*g_assert_cmpint (n_entities, ==, 1);*/
+  /*g_assert_nonnull (entities);*/
+  /*g_free (entities);*/
 }
 
 static void
