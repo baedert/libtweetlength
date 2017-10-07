@@ -18,6 +18,13 @@
 #ifndef __TL_DATA_H_
 #define __TL_DATA_H_
 
+#define PUNCTUATION   "!'#%&'()*+,\\-./:;<=>?@[]^_{|}~$"
+#define SPACES        " \0x0020\0085\00A0"
+#define INVALID_CHARS "\0xFFFE\0xFEFF\0xFFFF"
+
+#define INVALID_URL_CHARS (PUNCTUATION SPACES INVALID_CHARS)
+
+
 // List from twitter-text
 static const struct {
   size_t length;

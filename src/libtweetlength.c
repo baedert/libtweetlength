@@ -85,8 +85,29 @@ token_type_from_char (gunichar c)
     default:
     return TOK_TEXT;
   }
-
 }
+
+static inline gboolean
+token_in (const Token *t,
+          const char  *haystack)
+{
+  if (t->length_in_bytes > 1) {
+    return FALSE;
+  }
+
+  const int haystack_len = strlen (haystack);
+  int i;
+
+  for (i = 0; i < haystack_len; i ++) {
+    if (haystack[i] == t->start[0]) {
+      g_message ("Found '%c'", haystack[i]);
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
 
 static inline void
 emplace_token (GArray     *array,
@@ -394,10 +415,11 @@ parse_link (GArray      *entities,
 
   // Now read until .TLD
   guint dot_index = i;
+  g_debug ("Looking for TLD starting from %u", dot_index);
   while (dot_index < n_tokens - 1) { // -1 so we can do +1 in the loop body!
-    if (tokens[dot_index].type != TOK_TEXT &&
-        tokens[dot_index].type != TOK_NUMBER &&
-        tokens[dot_index].type != TOK_DOT) {
+    g_debug ("Trying token %u", dot_index);
+    if (tokens[dot_index].type != TOK_DOT &&
+        token_in (&tokens[dot_index], INVALID_URL_CHARS)) {
       return FALSE;
     }
 
