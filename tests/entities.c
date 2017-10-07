@@ -251,7 +251,7 @@ links (void)
   g_assert_cmpint (entities[0].length_in_characters, ==, 21);
   
   // 2) Some Brits buy ".uk.com" because the .co.uk and .com are taken (or something)
-  entities = tl_extract_entities ("http://example.uk,com", &n_entities, NULL);
+  entities = tl_extract_entities ("http://example.uk.com", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 1);
   g_assert_nonnull (entities);
   g_assert_cmpint (entities[0].type, ==, TL_ENT_LINK);
