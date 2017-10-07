@@ -44,6 +44,7 @@ enum {
   TOK_EQUALS,
   TOK_DASH,
   TOK_UNDERSCORE,
+  TOK_APOSTROPHE
 };
 
 static inline guint
@@ -72,6 +73,8 @@ token_type_from_char (gunichar c)
       return TOK_DASH;
     case '_':
       return TOK_UNDERSCORE;
+    case '\'':
+      return TOK_APOSTROPHE;
     case '0':
     case '1':
     case '2':
@@ -97,10 +100,6 @@ static inline gboolean
 token_in (const Token *t,
           const char  *haystack)
 {
-  if (t->length_in_bytes > 1) {
-    return FALSE;
-  }
-
   const int haystack_len = strlen (haystack);
   int i;
 
@@ -227,6 +226,7 @@ char_splits (gunichar c)
     case '\t':
     case '\0':
     case ' ':
+    case '\'':
       return TRUE;
     default:
       return FALSE;
@@ -308,9 +308,9 @@ parse_link_tail (GArray      *entities,
   for (;;) {
     t = &tokens[i];
 
-    if (t->type == TOK_WHITESPACE) {
+    if (t->type == TOK_WHITESPACE || t->type == TOK_APOSTROPHE) {
       i --;
-      g_debug("Found whitespace - backtracked one to %d", i);
+      g_debug("Found non-URL character - backtracked one to %d", i);
       break;
     }
 
@@ -419,8 +419,9 @@ parse_link (GArray      *entities,
   }
 
   // Make sure that we have the first part of a domain
-  if (tokens[i].type != TOK_TEXT &&
-      tokens[i].type != TOK_NUMBER) {
+  if ((tokens[i].type != TOK_TEXT &&
+      tokens[i].type != TOK_NUMBER) ||
+      token_in (&tokens[i], INVALID_URL_CHARS)) {
         return FALSE;
   }
 
@@ -435,8 +436,12 @@ parse_link (GArray      *entities,
   while (scan_position < n_tokens - 2) {
     g_debug ("Trying token %u and %u", scan_position + 1, scan_position + 2);
     if (tokens[scan_position + 1].type == TOK_DOT &&
-         (tokens[scan_position + 2].type == TOK_TEXT ||
-          tokens[scan_position + 2].type == TOK_NUMBER)) {
+         (
+           tokens[scan_position + 2].type == TOK_TEXT ||
+           tokens[scan_position + 2].type == TOK_NUMBER
+         ) &&
+         ! token_in (&tokens[scan_position + 2], INVALID_URL_CHARS)
+       ) {
       scan_position += 2;
 
       if (token_is_tld (&tokens[scan_position], has_protocol)) {
@@ -483,6 +488,10 @@ parse_link (GArray      *entities,
         // Trailing questionmark is not part of the link
         i --;
       }
+    }
+    // An @ means that we've confused the start of an email with a URL without a protocol
+    else if (tokens[i + 1].type == TOK_AT) {
+      return FALSE;
     }
   }
 
