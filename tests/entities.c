@@ -274,6 +274,50 @@ combined (void)
   g_free (entities);
 }
 
+static void
+link_conformance1 (void)
+{
+  // [1] https://github.com/twitter/twitter-text/blob/master/conformance/tlds.yml
+  const char * const containing_urls[] = {
+//    "https://twitter.澳門",   Listed in [1], but the tld is not in their list of tlds?
+//    "https://twitter.ഭാരതം",    Same
+//    "https://twitter.ಭಾರತ",    Same
+//    "https://twitter.ଭାରତ",    Same
+//    "https://twitter.ভাৰত",    Same
+    "https://twitter.한국",
+    "https://twitter.香港",
+    "https://twitter.新加坡",
+    "https://twitter.台灣",
+    "https://twitter.台湾",
+    "https://twitter.中国",
+    "https://twitter.გე",
+    "https://twitter.ไทย",
+    "https://twitter.ලංකා",
+    "https://twitter.భారత్",
+    "https://twitter.சிங்கப்பூர்",
+    "https://twitter.இலங்கை",
+    "https://twitter.இந்தியா",
+    "https://twitter.ભારત",
+    "https://twitter.ਭਾਰਤ",
+    "https://twitter.বাংলা",
+    // I'm stopping here since the .yml file is once again wrong all the time.
+  };
+  guint i;
+
+
+  for (i = 0; i < G_N_ELEMENTS (containing_urls); i ++) {
+    gsize n_entities;
+    TlEntity *entities = NULL;
+
+    entities = tl_extract_entities (containing_urls[i], &n_entities, NULL);
+    g_assert_nonnull (entities);
+    g_assert_cmpint (n_entities, ==, 1);
+    g_assert_cmpint (entities[0].start_character_index, ==, 0);
+
+    g_free (entities);
+  }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -287,6 +331,7 @@ main (int argc, char **argv)
   g_test_add_func ("/entities/hashtags", hashtags);
   g_test_add_func ("/entities/links", links);
   g_test_add_func ("/entities/combined", combined);
+  g_test_add_func ("/entities/link-conformance1", link_conformance1);
 
   return g_test_run ();
 }
