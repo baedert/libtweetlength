@@ -352,7 +352,7 @@ parse_link (GArray      *entities,
 
   t = &tokens[i];
 
-  if (t->type != TOK_TEXT) {
+  if (t->type != TOK_TEXT && t->type != TOK_NUMBER) {
     return FALSE;
   }
 
@@ -394,6 +394,7 @@ parse_link (GArray      *entities,
   guint dot_index = i;
   while (dot_index < n_tokens - 1) { // -1 so we can do +1 in the loop body!
     if (tokens[dot_index].type != TOK_TEXT &&
+        tokens[dot_index].type != TOK_NUMBER &&
         tokens[dot_index].type != TOK_DOT) {
       return FALSE;
     }
