@@ -793,8 +793,14 @@ tl_count_characters_n (const char *input,
 /**
  * tl_extract_entities:
  * @input: The input text to extract entities from
- * @out_n_entities: (out):
- * @out_text_length: (out) (optional):
+ * @out_n_entities: (out): Location to store the amount of entities in the returned
+ *   array. If 0, the return value is %NULL.
+ * @out_text_length: (out) (optional): Return location for the complete
+ *   length of @input, in characters. This is the same value one would
+ *   get from calling tl_count_characters() or tl_count_characters_n()
+ *   on @input.
+ *
+ * Returns: An array of #TlEntity. If no entities are found, %NULL is returned.
  */
 TlEntity *
 tl_extract_entities (const char *input,
@@ -818,11 +824,17 @@ tl_extract_entities (const char *input,
 }
 
 /**
- * tl_extract_entities:
+ * tl_extract_entities_n:
  * @input: The input text to extract entities from
- * @length_in_bytes: length of @input
- * @out_n_entities: (out):
- * @out_text_length: (out) (optional):
+ * @length_in_bytes: The length of @input, in bytes
+ * @out_n_entities: (out): Location to store the amount of entities in the returned
+ *   array. If 0, the return value is %NULL.
+ * @out_text_length: (out) (optional): Return location for the complete
+ *   length of @input, in characters. This is the same value one would
+ *   get from calling tl_count_characters() or tl_count_characters_n()
+ *   on @input.
+ *
+ * Returns: An array of #TlEntity. If no entities are found, %NULL is returned.
  */
 TlEntity *
 tl_extract_entities_n (const char *input,
