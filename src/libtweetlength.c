@@ -615,7 +615,8 @@ parse_hashtag (GArray      *entities,
   //skip #
   i ++;
   t = &tokens[i];
-  if (t->type != TOK_TEXT) {
+  if (t->type != TOK_TEXT &&
+      t->type != TOK_NUMBER) {
     return FALSE;
   }
 
