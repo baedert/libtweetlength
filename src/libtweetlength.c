@@ -391,8 +391,7 @@ parse_link (GArray      *entities,
   t = &tokens[i];
 
   // Some may not even appear before a protocol
-  if (i > 0 &&
-      (tokens[i - 1].type == TOK_DOLLAR)) {
+  if (i > 0 && token_in (&tokens[i - 1], INVALID_BEFORE_URL_CHARS)) {
     return FALSE;
   }
 
@@ -422,14 +421,7 @@ parse_link (GArray      *entities,
     has_protocol = TRUE;
   } else {
     // Lookbehind: Token before may not be an @, they are not supported.
-    // TODO: There's a list of valid before-url chars and we should just use that here.
-    if (i > 0 &&
-        (tokens[i - 1].type == TOK_AT ||
-         tokens[i - 1].type == TOK_DOT ||
-         tokens[i - 1].type == TOK_SLASH ||
-         tokens[i - 1].type == TOK_DASH ||
-         tokens[i - 1].type == TOK_UNDERSCORE ||
-         tokens[i - 1].type == TOK_CLOSE_PAREN)) {
+    if (i > 0 && token_in (&tokens[i - 1], INVALID_BEFORE_NON_PROTOCOL_URL_CHARS)) {
       return FALSE;
     }
   }
@@ -476,7 +468,6 @@ parse_link (GArray      *entities,
 
   if (tld_index >= n_tokens - 1 ||
       !tld_found) {
-    g_message ("Nope 1");
     return FALSE;
   }
 

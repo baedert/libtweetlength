@@ -24,6 +24,9 @@
 
 #define INVALID_URL_CHARS (PUNCTUATION SPACES INVALID_CHARS)
 
+#define INVALID_BEFORE_NON_PROTOCOL_URL_CHARS (".@_-)/")
+#define INVALID_BEFORE_URL_CHARS              ("$")
+
 
 // List from twitter-text
 static const struct {
