@@ -17,6 +17,18 @@
 
 #include "libtweetlength.h"
 
+static void
+empty (void)
+{
+  gsize n_entities;
+  TlEntity *entities;
+
+  entities = tl_extract_entities ("", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+
+  g_free (entities);
+}
 
 static void
 mentions (void)
@@ -496,6 +508,7 @@ main (int argc, char **argv)
   g_setenv ("G_MESSAGES_DEBUG", "libtl", TRUE);
 #endif
 
+  g_test_add_func ("/entities/empty", empty);
   g_test_add_func ("/entities/mentions", mentions);
   g_test_add_func ("/entities/hashtags", hashtags);
   g_test_add_func ("/entities/links", links);
