@@ -356,8 +356,6 @@ parse_link_tail (GArray      *entities,
       i --;
       break;
     }
-
-    g_debug ("i now: %u", i);
   }
 
   g_debug ("After i: %u", i);
@@ -478,6 +476,7 @@ parse_link (GArray      *entities,
   }
 
   // tld_index is the TOK_DOT
+  g_assert (tokens[tld_index].type == TOK_DOT);
   i = tld_index + 1;
 
   // If the next token is a colon, we are reading a port
@@ -492,7 +491,10 @@ parse_link (GArray      *entities,
     }
   }
 
-  // To continue a link, the next token must be a slash or a question mark.
+  g_debug ("After reading a port: %u", i);
+
+  // To continue a link, the next token must be a slash, a question mark
+  // or a colon
   // If it isn't, we stop here.
   if (i < n_tokens - 1) {
     // A trailing slash is part of the link, other punctuation is not.
@@ -508,9 +510,11 @@ parse_link (GArray      *entities,
         // Trailing questionmark is not part of the link
         i --;
       }
-    }
-    // An @ means that we've confused the start of an email with a URL without a protocol
-    else if (tokens[i + 1].type == TOK_AT) {
+    } else if (tokens[i + 1].type == TOK_AT) {
+      // We cannot just return FALSE for all non-slash/non-questionmark tokens here since
+      // The Rules say some of them make a link until this token and some of them cause the
+      // entire parsing to produce no link at all, like in the @ case (don't want to turn
+      // email addressed into links).
       return FALSE;
     }
   }
@@ -847,12 +851,29 @@ tl_extract_entities_internal (const char *input,
 
   tokens = tokenize (input, length_in_bytes);
 
+#if 0
+  g_debug ("############ %s: %.*s", __FUNCTION__, (guint)length_in_bytes, input);
+  for (guint i = 0; i < tokens->len; i ++) {
+    const Token *t = &g_array_index (tokens, Token, i);
+    g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s, start char: %u, chars: %u", i, t->type, (guint)t->length_in_bytes,
+         (int)t->length_in_bytes, t->start, (guint)t->start_character_index, (guint)t->length_in_characters);
+  }
+#endif
+
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
   entities = parse (token_array, n_tokens, extract_text_entities, &n_relevant_entities);
 
   *out_text_length = count_entities_in_characters (entities);
   g_free ((char *)token_array);
+
+#if 0
+  for (guint i = 0; i < entities->len; i ++) {
+    const TlEntity *e = &g_array_index (entities, TlEntity, i);
+    g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u, start character: %u", i, (int)e->length_in_bytes, e->start,
+               e->type, (guint)e->length_in_bytes, (guint)entity_length_in_characters (e), (guint)e->start_character_index);
+  }
+#endif
 
   // Only pass mentions, hashtags and links out
   result_entities = g_malloc (sizeof (TlEntity) * n_relevant_entities);
