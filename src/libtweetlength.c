@@ -43,6 +43,8 @@ enum {
   TOK_AT,
   TOK_EQUALS,
   TOK_DASH,
+  TOK_UNDERSCORE,
+  TOK_APOSTROPHE
 };
 
 static inline guint
@@ -69,6 +71,10 @@ token_type_from_char (gunichar c)
       return TOK_EQUALS;
     case '-':
       return TOK_DASH;
+    case '_':
+      return TOK_UNDERSCORE;
+    case '\'':
+      return TOK_APOSTROPHE;
     case '0':
     case '1':
     case '2':
@@ -94,10 +100,6 @@ static inline gboolean
 token_in (const Token *t,
           const char  *haystack)
 {
-  if (t->length_in_bytes > 1) {
-    return FALSE;
-  }
-
   const int haystack_len = strlen (haystack);
   int i;
 
@@ -219,10 +221,12 @@ char_splits (gunichar c)
     case '@':
     case '#':
     case '-':
+    case '_':
     case '\n':
     case '\t':
     case '\0':
     case ' ':
+    case '\'':
       return TRUE;
     default:
       return FALSE;
@@ -304,9 +308,9 @@ parse_link_tail (GArray      *entities,
   for (;;) {
     t = &tokens[i];
 
-    if (t->type == TOK_WHITESPACE) {
+    if (t->type == TOK_WHITESPACE || t->type == TOK_APOSTROPHE) {
       i --;
-      g_debug("Found whitespace - backtracked one to %d", i);
+      g_debug("Found non-URL character - backtracked one to %d", i);
       break;
     }
 
@@ -377,10 +381,6 @@ parse_link (GArray      *entities,
 
   t = &tokens[i];
 
-  if (t->type != TOK_TEXT && t->type != TOK_NUMBER) {
-    return FALSE;
-  }
-
   if (token_is_protocol (t)) {
     // need "://" now.
     t = &tokens[i + 1];
@@ -412,36 +412,53 @@ parse_link (GArray      *entities,
         (tokens[i - 1].type == TOK_AT ||
          tokens[i - 1].type == TOK_DOT ||
          tokens[i - 1].type == TOK_SLASH ||
-         tokens[i - 1].type == TOK_DASH)) {
+         tokens[i - 1].type == TOK_DASH ||
+         tokens[i - 1].type == TOK_UNDERSCORE)) {
       return FALSE;
     }
   }
+
+  // Make sure that we have the first part of a domain
+  if ((tokens[i].type != TOK_TEXT &&
+      tokens[i].type != TOK_NUMBER) ||
+      token_in (&tokens[i], INVALID_URL_CHARS)) {
+        return FALSE;
+  }
+
+  guint scan_position = i;
+  guint tld_index = i;
+
+  g_debug ("Looking for TLD starting from %u", scan_position);
 
   // Now read until .TLD
-  guint dot_index = i;
-  g_debug ("Looking for TLD starting from %u", dot_index);
-  while (dot_index < n_tokens - 1) { // -1 so we can do +1 in the loop body!
-    g_debug ("Trying token %u", dot_index);
-    if (tokens[dot_index].type != TOK_DOT &&
-        token_in (&tokens[dot_index], INVALID_URL_CHARS)) {
-      return FALSE;
-    }
+  // We're stepping two at a time to look for the repeating dot and then text/number
+  // As we're looking ahead then we need to stop two items before the end
+  while (scan_position < n_tokens - 2) {
+    g_debug ("Trying token %u and %u", scan_position + 1, scan_position + 2);
+    if (tokens[scan_position + 1].type == TOK_DOT &&
+         (
+           tokens[scan_position + 2].type == TOK_TEXT ||
+           tokens[scan_position + 2].type == TOK_NUMBER
+         ) &&
+         ! token_in (&tokens[scan_position + 2], INVALID_URL_CHARS)
+       ) {
+      scan_position += 2;
 
-    // The dot we look for is followed by a tld identifier such as "com"
-    if (tokens[dot_index].type == TOK_DOT &&
-        tokens[dot_index + 1].type == TOK_TEXT &&
-        token_is_tld (&tokens[dot_index + 1], has_protocol)) {
+      if (token_is_tld (&tokens[scan_position], has_protocol)) {
+        tld_index = scan_position;
+      }
+    } else {
       break;
     }
-    dot_index ++;
   }
-  g_debug ("dot index: %u", dot_index);
+  g_debug ("tld_index: %u", tld_index);
 
-  if (dot_index == n_tokens - 1) {
+  if (tld_index != scan_position ||
+      tld_index == i) {
     return FALSE;
   }
 
-  i = dot_index + 1;
+  i = tld_index;
 
   // If the next token is a colon, we are reading a port
   if (i < n_tokens - 1 && tokens[i + 1].type == TOK_COLON) {
@@ -471,6 +488,10 @@ parse_link (GArray      *entities,
         // Trailing questionmark is not part of the link
         i --;
       }
+    }
+    // An @ means that we've confused the start of an email with a URL without a protocol
+    else if (tokens[i + 1].type == TOK_AT) {
+      return FALSE;
     }
   }
 
@@ -520,11 +541,16 @@ parse_mention (GArray      *entities,
     return FALSE;
   }
 
-  //skip @
-  i ++;
-  t = &tokens[i];
-  if (t->type != TOK_TEXT &&
-      t->type != TOK_NUMBER) {
+  while (i < n_tokens - 1 &&
+    (
+      tokens[i + 1].type == TOK_TEXT ||
+      tokens[i + 1].type == TOK_NUMBER ||
+      tokens[i + 1].type == TOK_UNDERSCORE
+    )) {
+    i ++;
+  }
+
+  if (i == start_token) {
     return FALSE;
   }
 
