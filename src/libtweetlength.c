@@ -274,6 +274,7 @@ tokenize (const char *input,
     gunichar cur_char = g_utf8_get_char (p);
     gsize cur_length = 0;
     gsize length_in_chars = 0;
+    guint last_token_type = 0;
 
     /* If this char already splits, it's a one-char token */
     if (char_splits (cur_char)) {
@@ -284,12 +285,17 @@ tokenize (const char *input,
       continue;
     }
 
+    last_token_type = token_type_from_char (cur_char);
     do {
       const char *old_p = p;
       p = g_utf8_next_char (p);
       cur_char = g_utf8_get_char (p);
       cur_length += p - old_p;
       length_in_chars ++;
+
+      if (token_type_from_char (cur_char) != last_token_type)
+        break;
+
     } while (!char_splits (cur_char) && p - input < length_in_bytes);
 
     emplace_token (tokens, cur_start, cur_length, cur_character_index, length_in_chars);
