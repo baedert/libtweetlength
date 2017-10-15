@@ -117,7 +117,7 @@ advanced_links (void)
   // https://github.com/baedert/corebird/issues/471
   g_assert_cmpint (tl_count_characters ("My build of @Corebird (https://software.opensuse.org/download.html?project=home%3AIBBoard%3Adesktop&package=corebird) now comes with more theme compatibility for Adwaita-compliant themes"), ==, 140 - 24);
 
-
+  g_assert_cmpint (tl_count_characters ("https://foobar.example.com.com.com.com"), ==, 23);
 
   // XXX ALL of these are noted as links in [1] but twitter.com says no FFS
   /*g_assert_cmpint (tl_count_characters ("http://user:PASSW0RD@example.com/"), ==, 23);*/

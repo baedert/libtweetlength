@@ -44,7 +44,8 @@ enum {
   TOK_EQUALS,
   TOK_DASH,
   TOK_UNDERSCORE,
-  TOK_APOSTROPHE
+  TOK_APOSTROPHE,
+  TOK_DOLLAR
 };
 
 static inline guint
@@ -75,6 +76,8 @@ token_type_from_char (gunichar c)
       return TOK_UNDERSCORE;
     case '\'':
       return TOK_APOSTROPHE;
+    case '$':
+      return TOK_DOLLAR;
     case '0':
     case '1':
     case '2':
@@ -102,6 +105,11 @@ token_in (const Token *t,
 {
   const int haystack_len = strlen (haystack);
   int i;
+
+  if (t->length_in_bytes > 1) {
+    return FALSE;
+  }
+
 
   for (i = 0; i < haystack_len; i ++) {
     if (haystack[i] == t->start[0]) {
@@ -227,6 +235,7 @@ char_splits (gunichar c)
     case '\0':
     case ' ':
     case '\'':
+    case '$':
       return TRUE;
     default:
       return FALSE;
@@ -381,6 +390,12 @@ parse_link (GArray      *entities,
 
   t = &tokens[i];
 
+  // Some may not even appear before a protocol
+  if (i > 0 &&
+      (tokens[i - 1].type == TOK_DOLLAR)) {
+    return FALSE;
+  }
+
   if (token_is_protocol (t)) {
     // need "://" now.
     t = &tokens[i + 1];
@@ -413,52 +428,60 @@ parse_link (GArray      *entities,
          tokens[i - 1].type == TOK_DOT ||
          tokens[i - 1].type == TOK_SLASH ||
          tokens[i - 1].type == TOK_DASH ||
-         tokens[i - 1].type == TOK_UNDERSCORE)) {
+         tokens[i - 1].type == TOK_UNDERSCORE ||
+         tokens[i - 1].type == TOK_CLOSE_PAREN)) {
       return FALSE;
     }
   }
 
-  // Make sure that we have the first part of a domain
-  if ((tokens[i].type != TOK_TEXT &&
-      tokens[i].type != TOK_NUMBER) ||
-      token_in (&tokens[i], INVALID_URL_CHARS)) {
-        return FALSE;
-  }
-
-  guint scan_position = i;
-  guint tld_index = i;
-
-  g_debug ("Looking for TLD starting from %u", scan_position);
-
-  // Now read until .TLD
-  // We're stepping two at a time to look for the repeating dot and then text/number
-  // As we're looking ahead then we need to stop two items before the end
-  while (scan_position < n_tokens - 2) {
-    g_debug ("Trying token %u and %u", scan_position + 1, scan_position + 2);
-    if (tokens[scan_position + 1].type == TOK_DOT &&
-         (
-           tokens[scan_position + 2].type == TOK_TEXT ||
-           tokens[scan_position + 2].type == TOK_NUMBER
-         ) &&
-         ! token_in (&tokens[scan_position + 2], INVALID_URL_CHARS)
-       ) {
-      scan_position += 2;
-
-      if (token_is_tld (&tokens[scan_position], has_protocol)) {
-        tld_index = scan_position;
-      }
-    } else {
-      break;
-    }
-  }
-  g_debug ("tld_index: %u", tld_index);
-
-  if (tld_index != scan_position ||
-      tld_index == i) {
+  if (token_in (&tokens[i], INVALID_URL_CHARS)) {
     return FALSE;
   }
 
-  i = tld_index;
+  // Now read until .tld. There can be multiple (e.g. in http://foobar.com.com.com"),
+  // so we need to do this in a greedy way.
+  guint tld_index = i;
+  guint tld_iter = i;
+  gboolean tld_found = FALSE;
+  g_debug ("Looking for TLD starting from %u of %ld", i, n_tokens);
+  while (tld_iter < n_tokens - 1) {
+    const Token *t = &tokens[tld_iter];
+
+    if (t->type == TOK_WHITESPACE) {
+      if (!tld_found) {
+        return FALSE;
+      }
+    }
+
+    if (!(t->type == TOK_NUMBER ||
+          t->type == TOK_TEXT ||
+          t->type == TOK_DOT)) {
+      if (!tld_found) {
+        return FALSE;
+      } else {
+        break;
+      }
+    }
+
+    if (t->type == TOK_DOT &&
+        token_is_tld (&tokens[tld_iter + 1], has_protocol)) {
+      tld_index = tld_iter;
+      tld_found = TRUE;
+      g_debug ("TLD found at %u", tld_iter);
+    }
+
+    tld_iter ++;
+  }
+  g_debug ("tld_index: %u", tld_index);
+
+  if (tld_index >= n_tokens - 1 ||
+      !tld_found) {
+    g_message ("Nope 1");
+    return FALSE;
+  }
+
+  // tld_index is the TOK_DOT
+  i = tld_index + 1;
 
   // If the next token is a colon, we are reading a port
   if (i < n_tokens - 1 && tokens[i + 1].type == TOK_COLON) {
@@ -542,11 +565,9 @@ parse_mention (GArray      *entities,
   }
 
   while (i < n_tokens - 1 &&
-    (
-      tokens[i + 1].type == TOK_TEXT ||
-      tokens[i + 1].type == TOK_NUMBER ||
-      tokens[i + 1].type == TOK_UNDERSCORE
-    )) {
+        (tokens[i + 1].type == TOK_TEXT ||
+         tokens[i + 1].type == TOK_NUMBER ||
+         tokens[i + 1].type == TOK_UNDERSCORE)) {
     i ++;
   }
 
@@ -744,7 +765,7 @@ tl_count_characters_n (const char *input,
   tokens = tokenize (input, length_in_bytes);
   for (guint i = 0; i < tokens->len; i ++) {
     const Token *t = &g_array_index (tokens, Token, i);
-    g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s", i, t->type, (guint)t->length_in_bytes,
+    g_debug ("Token %u: Type: %d, Length: %u, Text: %.*s", i, t->type, (guint)t->length_in_bytes,
                (int)t->length_in_bytes, t->start);
   }
 
