@@ -38,15 +38,24 @@ typedef enum {
   TL_ENT_WHITESPACE = 5,
 } TlEntityType;
 
-gsize      tl_count_characters   (const char *input);
-gsize      tl_count_characters_n (const char *input,
-                                  gsize       length_in_bytes);
-TlEntity * tl_extract_entities   (const char *input,
-                                  gsize      *out_n_entities,
-                                  gsize      *out_text_length);
-TlEntity * tl_extract_entities_n (const char *input,
-                                  gsize       length_in_bytes,
-                                  gsize      *out_n_entities,
-                                  gsize      *out_text_length);
+gsize      tl_count_characters            (const char *input);
+gsize      tl_count_characters_n          (const char *input,
+                                           gsize       length_in_bytes);
+TlEntity * tl_extract_entities            (const char *input,
+                                           gsize      *out_n_entities,
+                                           gsize      *out_text_length);
+TlEntity * tl_extract_entities_n          (const char *input,
+                                           gsize       length_in_bytes,
+                                           gsize      *out_n_entities,
+                                           gsize      *out_text_length);
+TlEntity * tl_extract_entities_and_text   (const char *input,
+                                           gsize      *out_n_entities,
+                                           gsize      *out_text_length);
+TlEntity * tl_extract_entities_and_text_n (const char *input,
+                                           gsize       length_in_bytes,
+                                           gsize      *out_n_entities,
+                                           gsize      *out_text_length);
+
+
 
 #endif

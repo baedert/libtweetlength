@@ -664,6 +664,7 @@ parse_hashtag (GArray      *entities,
 static GArray *
 parse (const Token *tokens,
        gsize        n_tokens,
+       gboolean     extract_text_entities,
        guint       *n_relevant_entities)
 {
   GArray *entities = g_array_new (FALSE, TRUE, sizeof (TlEntity));
@@ -693,6 +694,10 @@ parse (const Token *tokens,
           continue;
         }
       break;
+    }
+
+    if (extract_text_entities) {
+      relevant_entities ++;
     }
 
     emplace_entity (entities,
@@ -776,7 +781,7 @@ tl_count_characters_n (const char *input,
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
 
-  entities = parse (token_array, n_tokens, NULL);
+  entities = parse (token_array, n_tokens, FALSE, NULL);
   for (guint i = 0; i < entities->len; i ++) {
     const TlEntity *e = &g_array_index (entities, TlEntity, i);
     g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u", i, (int)e->length_in_bytes, e->start,
@@ -823,6 +828,60 @@ tl_extract_entities (const char *input,
   return tl_extract_entities_n (input, strlen (input), out_n_entities, out_text_length);
 }
 
+
+static TlEntity *
+tl_extract_entities_internal (const char *input,
+                              gsize       length_in_bytes,
+                              gsize      *out_n_entities,
+                              gsize      *out_text_length,
+                              gboolean    extract_text_entities)
+{
+  GArray *tokens;
+  const Token *token_array;
+  gsize n_tokens;
+  GArray *entities;
+  guint n_relevant_entities;
+  TlEntity *result_entities;
+  guint result_index = 0;
+
+  tokens = tokenize (input, length_in_bytes);
+
+  n_tokens = tokens->len;
+  token_array = (const Token *)g_array_free (tokens, FALSE);
+  entities = parse (token_array, n_tokens, extract_text_entities, &n_relevant_entities);
+
+  *out_text_length = count_entities_in_characters (entities);
+  g_free ((char *)token_array);
+
+  // Only pass mentions, hashtags and links out
+  result_entities = g_malloc (sizeof (TlEntity) * n_relevant_entities);
+  for (guint i = 0; i < entities->len; i ++) {
+    const TlEntity *e = &g_array_index (entities, TlEntity, i);
+    switch (e->type) {
+      case TL_ENT_LINK:
+      case TL_ENT_HASHTAG:
+      case TL_ENT_MENTION:
+        memcpy (&result_entities[result_index], e, sizeof (TlEntity));
+        result_index ++;
+      break;
+
+      case TL_ENT_TEXT:
+        if (extract_text_entities) {
+          memcpy (&result_entities[result_index], e, sizeof (TlEntity));
+          result_index ++;
+        }
+        break;
+
+      default: {}
+    }
+  }
+
+  *out_n_entities = n_relevant_entities;
+  g_array_free (entities, TRUE);
+
+  return result_entities;
+}
+
 /**
  * tl_extract_entities_n:
  * @input: The input text to extract entities from
@@ -842,65 +901,103 @@ tl_extract_entities_n (const char *input,
                        gsize      *out_n_entities,
                        gsize      *out_text_length)
 {
-  GArray *tokens;
-  const Token *token_array;
-  gsize n_tokens;
-  GArray *entities;
   gsize dummy;
-  guint n_relevant_entities;
-  TlEntity *result_entities;
-  guint result_index = 0;
 
   g_return_val_if_fail (out_n_entities != NULL, NULL);
 
   if (input == NULL || input[0] == '\0') {
     return 0;
   }
-  g_debug ("------- INPUT: %s %p (Bytes: %u)-------", input, input, (guint) length_in_bytes); // XXX Expected to be NUL-terminated
 
   if (out_text_length == NULL) {
     out_text_length = &dummy;
   }
 
-  tokens = tokenize (input, length_in_bytes);
+  return tl_extract_entities_internal (input,
+                                       length_in_bytes,
+                                       out_n_entities,
+                                       out_text_length,
+                                       FALSE);
+}
 
-  for (guint i = 0; i < tokens->len; i ++) {
-    const Token *t = &g_array_index (tokens, Token, i);
-    g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s, start char: %u, chars: %u", i, t->type, (guint)t->length_in_bytes,
-               (int)t->length_in_bytes, t->start, (guint)t->start_character_index, (guint)t->length_in_characters);
+/**
+ * tl_extract_entities_and_text:
+ * @input: The input text to extract entities from
+ * @out_n_entities: (out): Location to store the amount of entities in the returned
+ *   array. If 0, the return value is %NULL.
+ * @out_text_length: (out) (optional): Return location for the complete
+ *   length of @input, in characters. This is the same value one would
+ *   get from calling tl_count_characters() or tl_count_characters_n()
+ *   on @input.
+ *
+ * This is different from tl_extract_entities() in that it returns all entities
+ * and not just hashtags, links and mentions. This allows for further post-processing
+ * from the caller.
+ *
+ * Returns: An array of #TlEntity. If no entities are found, %NULL is returned.
+ */
+TlEntity *
+tl_extract_entities_and_text (const char *input,
+                              gsize      *out_n_entities,
+                              gsize      *out_text_length)
+{
+  gsize dummy;
+
+  g_return_val_if_fail (out_n_entities != NULL, NULL);
+
+  if (input == NULL || input[0] == '\0') {
+    return 0;
   }
 
-  n_tokens = tokens->len;
-  token_array = (const Token *)g_array_free (tokens, FALSE);
-  entities = parse (token_array, n_tokens, &n_relevant_entities);
-
-  *out_text_length = count_entities_in_characters (entities);
-  g_free ((char *)token_array);
-
-  for (guint i = 0; i < entities->len; i ++) {
-    const TlEntity *e = &g_array_index (entities, TlEntity, i);
-    g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u, start character: %u", i, (int)e->length_in_bytes, e->start,
-               e->type, (guint)e->length_in_bytes, (guint)entity_length_in_characters (e), (guint)e->start_character_index);
+  if (out_text_length == NULL) {
+    out_text_length = &dummy;
   }
 
-  // Only pass mentions, hashtags and links out
-  result_entities = g_malloc (sizeof (TlEntity) * n_relevant_entities);
-  for (guint i = 0; i < entities->len; i ++) {
-    const TlEntity *e = &g_array_index (entities, TlEntity, i);
-    switch (e->type) {
-      case TL_ENT_LINK:
-      case TL_ENT_HASHTAG:
-      case TL_ENT_MENTION:
-        memcpy (&result_entities[result_index], e, sizeof (TlEntity));
-        result_index ++;
-      break;
+  return tl_extract_entities_internal (input,
+                                       strlen (input),
+                                       out_n_entities,
+                                       out_text_length,
+                                       TRUE);
+}
 
-      default: {}
-    }
+/**
+ * tl_extract_entities_and_text_n:
+ * @input: The input text to extract entities from
+ * @length_in_bytes: The length of @input, in bytes
+ * @out_n_entities: (out): Location to store the amount of entities in the returned
+ *   array. If 0, the return value is %NULL.
+ * @out_text_length: (out) (optional): Return location for the complete
+ *   length of @input, in characters. This is the same value one would
+ *   get from calling tl_count_characters() or tl_count_characters_n()
+ *   on @input.
+ *
+ * This is different from tl_extract_entities_n() in that it returns all entities
+ * and not just hashtags, links and mentions. This allows for further post-processing
+ * from the caller.
+ *
+ * Returns: An array of #TlEntity. If no entities are found, %NULL is returned.
+ */
+TlEntity *
+tl_extract_entities_and_text_n (const char *input,
+                                gsize       length_in_bytes,
+                                gsize      *out_n_entities,
+                                gsize      *out_text_length)
+{
+  gsize dummy;
+
+  g_return_val_if_fail (out_n_entities != NULL, NULL);
+
+  if (input == NULL || input[0] == '\0') {
+    return 0;
   }
 
-  *out_n_entities = n_relevant_entities;
-  g_array_free (entities, TRUE);
+  if (out_text_length == NULL) {
+    out_text_length = &dummy;
+  }
 
-  return result_entities;
+  return tl_extract_entities_internal (input,
+                                       length_in_bytes,
+                                       out_n_entities,
+                                       out_text_length,
+                                       TRUE);
 }
