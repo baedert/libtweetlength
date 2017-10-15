@@ -134,6 +134,7 @@ hashtags (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 7);
+  g_free (entities);
 
   entities = tl_extract_entities ("#123abc", &n_entities, &text_length);
   g_assert_cmpint (n_entities, ==, 1);
@@ -142,7 +143,49 @@ hashtags (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 7);
+  g_free (entities);
 
+  entities = tl_extract_entities ("#that1time", &n_entities, &text_length);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (text_length, ==, 10);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 10);
+  g_free (entities);
+
+  entities = tl_extract_entities ("#timethat1", &n_entities, &text_length);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (text_length, ==, 10);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 10);
+  g_free (entities);
+
+  // All-number hastags are invalid.
+  entities = tl_extract_entities ("#123", &n_entities, &text_length);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_cmpint (text_length, ==, 4);
+  g_assert_null (entities);
+  g_free (entities);
+
+  entities = tl_extract_entities ("#ашок", &n_entities, &text_length);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (text_length, ==, 5);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 5);
+  g_free (entities);
+
+  entities = tl_extract_entities ("#트위터", &n_entities, &text_length);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (text_length, ==, 4);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 4);
   g_free (entities);
 }
 

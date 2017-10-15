@@ -608,25 +608,31 @@ parse_hashtag (GArray      *entities,
                gsize        n_tokens,
                guint       *current_position)
 {
-  const Token *t;
   gsize i = *current_position;
   guint start_token;
   guint end_token;
+  gboolean text_found = FALSE;
 
-  t = &tokens[i];
-  g_assert (t->type == TOK_HASH);
+  g_assert (tokens[i].type == TOK_HASH);
   start_token = i;
-
 
   //skip #
   i ++;
-  t = &tokens[i];
-  if (t->type != TOK_TEXT &&
-      t->type != TOK_NUMBER) {
+
+  for (;i < n_tokens; i ++) {
+    if (tokens[i].type != TOK_TEXT &&
+        tokens[i].type != TOK_NUMBER) {
+      break;
+    }
+
+    text_found |= tokens[i].type == TOK_TEXT;
+  }
+
+  if (!text_found) {
     return FALSE;
   }
 
-  end_token = i;
+  end_token = i - 1;
   g_assert (end_token < n_tokens);
 
   // Simply add up all the lengths
