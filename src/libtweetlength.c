@@ -816,13 +816,14 @@ tl_extract_entities (const char *input,
 
   g_return_val_if_fail (out_n_entities != NULL, NULL);
 
-  if (input == NULL || input[0] == '\0') {
-    *out_n_entities = 0;
-    return NULL;
-  }
-
   if (out_text_length == NULL) {
     out_text_length = &dummy;
+  }
+
+  if (input == NULL || input[0] == '\0') {
+    *out_n_entities = 0;
+    *out_text_length = 0;
+    return NULL;
   }
 
   return tl_extract_entities_n (input, strlen (input), out_n_entities, out_text_length);
@@ -905,12 +906,14 @@ tl_extract_entities_n (const char *input,
 
   g_return_val_if_fail (out_n_entities != NULL, NULL);
 
-  if (input == NULL || input[0] == '\0') {
-    return 0;
-  }
-
   if (out_text_length == NULL) {
     out_text_length = &dummy;
+  }
+
+  if (input == NULL || input[0] == '\0') {
+    *out_n_entities = 0;
+    *out_text_length = 0;
+    return NULL;
   }
 
   return tl_extract_entities_internal (input,
@@ -945,12 +948,14 @@ tl_extract_entities_and_text (const char *input,
 
   g_return_val_if_fail (out_n_entities != NULL, NULL);
 
-  if (input == NULL || input[0] == '\0') {
-    return 0;
-  }
-
   if (out_text_length == NULL) {
     out_text_length = &dummy;
+  }
+
+  if (input == NULL || input[0] == '\0') {
+    *out_n_entities = 0;
+    *out_text_length = 0;
+    return NULL;
   }
 
   return tl_extract_entities_internal (input,
@@ -987,12 +992,14 @@ tl_extract_entities_and_text_n (const char *input,
 
   g_return_val_if_fail (out_n_entities != NULL, NULL);
 
-  if (input == NULL || input[0] == '\0') {
-    return 0;
-  }
-
   if (out_text_length == NULL) {
     out_text_length = &dummy;
+  }
+
+  if (input == NULL || input[0] == '\0') {
+    *out_n_entities = 0;
+    *out_text_length = 0;
+    return NULL;
   }
 
   return tl_extract_entities_internal (input,

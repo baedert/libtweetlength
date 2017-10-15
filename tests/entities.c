@@ -499,6 +499,19 @@ link_conformance1 (void)
   }
 }
 
+static void
+and_text (void)
+{
+  gsize n_entities;
+  TlEntity *entities;
+
+  entities = tl_extract_entities_and_text ("", &n_entities, NULL);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+
+  g_free (entities);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -514,6 +527,7 @@ main (int argc, char **argv)
   g_test_add_func ("/entities/links", links);
   g_test_add_func ("/entities/combined", combined);
   g_test_add_func ("/entities/link-conformance1", link_conformance1);
+  g_test_add_func ("/entities/and-text", and_text);
 
   return g_test_run ();
 }
