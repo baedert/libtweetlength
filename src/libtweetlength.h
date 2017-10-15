@@ -31,11 +31,11 @@ struct _TlEntity {
 typedef struct _TlEntity TlEntity;
 
 typedef enum {
-  TL_ENT_TEXT = 1,
-  TL_ENT_HASHTAG,
-  TL_ENT_LINK,
-  TL_ENT_MENTION,
-  TL_ENT_WHITESPACE,
+  TL_ENT_TEXT       = 1,
+  TL_ENT_HASHTAG    = 2,
+  TL_ENT_LINK       = 3,
+  TL_ENT_MENTION    = 4,
+  TL_ENT_WHITESPACE = 5,
 } TlEntityType;
 
 gsize      tl_count_characters   (const char *input);
