@@ -705,7 +705,7 @@ parse (const Token *tokens,
     }
 
     emplace_entity (entities,
-                    TL_ENT_TEXT,
+                    token->type == TOK_WHITESPACE ? TL_ENT_WHITESPACE : TL_ENT_TEXT,
                     token->start,
                     token->length_in_bytes,
                     token->start_character_index,
