@@ -521,7 +521,7 @@ parse_link (GArray      *entities,
       // We cannot just return FALSE for all non-slash/non-questionmark tokens here since
       // The Rules say some of them make a link until this token and some of them cause the
       // entire parsing to produce no link at all, like in the @ case (don't want to turn
-      // email addressed into links).
+      // email addresses into links).
       return FALSE;
     }
   }
