@@ -859,7 +859,7 @@ tl_extract_entities_internal (const char *input,
 
   tokens = tokenize (input, length_in_bytes);
 
-#if 0
+#ifdef LIBTL_DEBUG
   g_debug ("############ %s: %.*s", __FUNCTION__, (guint)length_in_bytes, input);
   for (guint i = 0; i < tokens->len; i ++) {
     const Token *t = &g_array_index (tokens, Token, i);
@@ -875,7 +875,7 @@ tl_extract_entities_internal (const char *input,
   *out_text_length = count_entities_in_characters (entities);
   g_free ((char *)token_array);
 
-#if 0
+#ifdef LIBTL_DEBUG
   for (guint i = 0; i < entities->len; i ++) {
     const TlEntity *e = &g_array_index (entities, TlEntity, i);
     g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u, start character: %u", i, (int)e->length_in_bytes, e->start,
