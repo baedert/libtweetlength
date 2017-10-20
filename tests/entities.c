@@ -431,6 +431,31 @@ links (void)
   g_assert_cmpint (n_entities, ==, 1);
   g_assert_nonnull (entities);
   g_free (entities);
+
+  // We disallow dashes at the start and end of the domain, but we need to allow
+  // it in the middle of course.
+  entities = tl_extract_entities ("https://foo-bar.com", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert (entities[0].type == TL_ENT_LINK);
+  g_free (entities);
+
+  // We do try to find the last domain (e.g. in foo.com.com.com), but we stop doing
+  // that once we find a / or ?
+  entities = tl_extract_entities ("https://foobar.com?b=.com", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert (entities[0].type == TL_ENT_LINK);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 25);
+  g_free (entities);
+
+  // Looks weird but still a link
+  entities = tl_extract_entities ("https://foobar.com/b=.com", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert (entities[0].type == TL_ENT_LINK);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 25);
+  g_free (entities);
 }
 
 static void
