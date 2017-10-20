@@ -501,8 +501,7 @@ parse_link (GArray      *entities,
 
   g_debug ("After reading a port: %u", i);
 
-  // To continue a link, the next token must be a slash, a question mark
-  // or a colon
+  // To continue a link, the next token must be a slash or a question mark
   // If it isn't, we stop here.
   if (i < n_tokens - 1) {
     // A trailing slash is part of the link, other punctuation is not.
