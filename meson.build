@@ -15,7 +15,7 @@ install_headers(headers)
 
 enable_debug = get_option('buildtype') == 'debug' or get_option('buildtype') == 'debugoptimized'
 if enable_debug
-  add_project_arguments('-DDEBUG', language: 'c')
+  add_project_arguments('-DLIBTL_DEBUG', language: 'c')
 endif
 
 

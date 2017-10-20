@@ -517,7 +517,7 @@ main (int argc, char **argv)
 {
   g_test_init (&argc, &argv, NULL);
 
-#ifdef DEBUG
+#ifdef LIBTL_DEBUG
   g_setenv ("G_MESSAGES_DEBUG", "libtl", TRUE);
 #endif
 

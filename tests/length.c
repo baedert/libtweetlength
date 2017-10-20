@@ -155,7 +155,7 @@ main (int argc, char **argv)
 
   g_assert (GTLDS[G_N_ELEMENTS (GTLDS) - 1].length >= CCTLDS[G_N_ELEMENTS (CCTLDS) - 1].length);
 
-#ifdef DEBUG
+#ifdef LIBTL_DEBUG
   g_setenv ("G_MESSAGES_DEBUG", "libtl", TRUE);
 #endif
 
