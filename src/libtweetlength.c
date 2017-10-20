@@ -781,24 +781,12 @@ tl_count_characters_n (const char *input,
   }
 
   // From here on, input/length_in_bytes are trusted to be OK
-
-  g_debug ("------- INPUT: %s %p (Bytes: %u)-------", input, input, (guint) length_in_bytes); // XXX Expected to be NUL-terminated
   tokens = tokenize (input, length_in_bytes);
-  for (guint i = 0; i < tokens->len; i ++) {
-    const Token *t = &g_array_index (tokens, Token, i);
-    g_debug ("Token %u: Type: %d, Length: %u, Text: %.*s", i, t->type, (guint)t->length_in_bytes,
-               (int)t->length_in_bytes, t->start);
-  }
 
   n_tokens = tokens->len;
   token_array = (const Token *)g_array_free (tokens, FALSE);
 
   entities = parse (token_array, n_tokens, FALSE, NULL);
-  for (guint i = 0; i < entities->len; i ++) {
-    const TlEntity *e = &g_array_index (entities, TlEntity, i);
-    g_debug ("TlEntity %u: Text: '%.*s', Type: %u, Bytes: %u, Length: %u", i, (int)e->length_in_bytes, e->start,
-               e->type, (guint)e->length_in_bytes, (guint)entity_length_in_characters (e));
-  }
 
   length = count_entities_in_characters (entities);
   g_array_free (entities, TRUE);
