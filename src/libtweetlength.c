@@ -29,6 +29,14 @@ typedef struct {
   gsize length_in_characters;
 } Token;
 
+#ifdef LIBTL_DEBUG
+static char * G_GNUC_UNUSED
+token_str (const Token *t)
+{
+  return g_strdup_printf ("Type: %u, Text: '%.*s'", t->type, (int)t->length_in_bytes, t->start);
+}
+#endif
+
 enum {
   TOK_TEXT = 1,
   TOK_NUMBER,
