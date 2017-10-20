@@ -303,7 +303,7 @@ links (void)
   g_assert_cmpint (entities[0].length_in_characters, ==, 21);
 
   g_free (entities);
-  
+
   // And just to make sure that we're not special-casing TLD-like entries:
   // 1) France normally just has "….fr" but also allows ".com.fr"
   entities = tl_extract_entities ("http://example.com.fr", &n_entities, NULL);
@@ -313,7 +313,7 @@ links (void)
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 21);
   g_free (entities);
-  
+
   // 2) Some Brits buy ".uk.com" because the .co.uk and .com are taken (or something)
   entities = tl_extract_entities ("http://example.uk.com", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 1);
