@@ -457,7 +457,8 @@ parse_link (GArray      *entities,
 
     if (!(t->type == TOK_NUMBER ||
           t->type == TOK_TEXT ||
-          t->type == TOK_DOT)) {
+          t->type == TOK_DOT ||
+          t->type == TOK_DASH)) {
       if (!tld_found) {
         return FALSE;
       } else {
@@ -477,7 +478,8 @@ parse_link (GArray      *entities,
   g_debug ("tld_index: %u", tld_index);
 
   if (tld_index >= n_tokens - 1 ||
-      !tld_found) {
+      !tld_found ||
+      token_in (&tokens[tld_index - 1], INVALID_URL_CHARS)) {
     return FALSE;
   }
 
