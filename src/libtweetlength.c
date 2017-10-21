@@ -271,6 +271,7 @@ char_splits (gunichar c)
     case '\'':
     case '"':
     case '$':
+    case '|':
       return TRUE;
     default:
       return FALSE;
