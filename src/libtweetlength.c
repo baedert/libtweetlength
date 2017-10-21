@@ -53,6 +53,7 @@ enum {
   TOK_DASH,
   TOK_UNDERSCORE,
   TOK_APOSTROPHE,
+  TOK_QUOTE,
   TOK_DOLLAR
 };
 
@@ -84,6 +85,8 @@ token_type_from_char (gunichar c)
       return TOK_UNDERSCORE;
     case '\'':
       return TOK_APOSTROPHE;
+    case '"':
+      return TOK_QUOTE;
     case '$':
       return TOK_DOLLAR;
     case '0':
@@ -266,6 +269,7 @@ char_splits (gunichar c)
     case '\0':
     case ' ':
     case '\'':
+    case '"':
     case '$':
       return TRUE;
     default:
