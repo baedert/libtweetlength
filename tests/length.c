@@ -112,7 +112,7 @@ advanced_links (void)
 
   // Should NOT be links.
   g_assert_cmpint (tl_count_characters ("foo:test@example.com"), ==, 20);
-  g_assert_cmpint (tl_count_characters ("test@example.com"), ==, 16);\
+  g_assert_cmpint (tl_count_characters ("test@example.com"), ==, 16);
 
   // https://github.com/baedert/corebird/issues/471
   g_assert_cmpint (tl_count_characters ("My build of @Corebird (https://software.opensuse.org/download.html?project=home%3AIBBoard%3Adesktop&package=corebird) now comes with more theme compatibility for Adwaita-compliant themes"), ==, 140 - 24);
