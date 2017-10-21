@@ -54,7 +54,8 @@ enum {
   TOK_UNDERSCORE,
   TOK_APOSTROPHE,
   TOK_QUOTE,
-  TOK_DOLLAR
+  TOK_DOLLAR,
+  TOK_AMPERSAND
 };
 
 static inline guint
@@ -89,6 +90,8 @@ token_type_from_char (gunichar c)
       return TOK_QUOTE;
     case '$':
       return TOK_DOLLAR;
+    case '&':
+      return TOK_AMPERSAND;
     case '0':
     case '1':
     case '2':
@@ -106,7 +109,7 @@ token_type_from_char (gunichar c)
       return TOK_WHITESPACE;
 
     default:
-    return TOK_TEXT;
+      return TOK_TEXT;
   }
 }
 
@@ -272,6 +275,7 @@ char_splits (gunichar c)
     case '"':
     case '$':
     case '|':
+    case '&':
       return TRUE;
     default:
       return FALSE;
