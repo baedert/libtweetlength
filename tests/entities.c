@@ -44,7 +44,6 @@ mentions (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 7);
-
   g_free (entities);
 
   entities = tl_extract_entities ("@_foobar", &n_entities, &text_length);
@@ -54,7 +53,6 @@ mentions (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 8);
-
   g_free (entities);
 
   entities = tl_extract_entities ("@foobar?", &n_entities, &text_length);
@@ -64,7 +62,6 @@ mentions (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 7);
-
   g_free (entities);
 
   entities = tl_extract_entities ("@foobar-bla", &n_entities, &text_length);
@@ -74,7 +71,6 @@ mentions (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 7);
-
   g_free (entities);
 
   entities = tl_extract_entities ("aaa @foobar-bla", &n_entities, &text_length);
@@ -84,7 +80,6 @@ mentions (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[0].start_character_index, ==, 4);
   g_assert_cmpint (entities[0].length_in_characters, ==, 7);
-
   g_free (entities);
 
   entities = tl_extract_entities ("@12345", &n_entities, NULL);
@@ -93,20 +88,17 @@ mentions (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-
   g_free (entities);
 
   // According to [1], this should be a mention, but twitter.com disagrees...
   entities = tl_extract_entities ("の@usernameに到着を待っている", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 0);
   g_assert_null (entities);
-
   g_free (entities);
 
   entities = tl_extract_entities ("abc@foo", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 0);
   g_assert_null (entities);
-
   g_free (entities);
 
   entities = tl_extract_entities ("Current Status: @_@ (cc: @username)", &n_entities, NULL);
@@ -115,7 +107,6 @@ mentions (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[0].start_character_index, ==, 25);
   g_assert_cmpint (entities[0].length_in_characters, ==, 9);
-
   g_free (entities);
 
   entities = tl_extract_entities ("@username email me @test@example.com", &n_entities, NULL);
@@ -124,10 +115,7 @@ mentions (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 9);
-
   g_free (entities);
-
-
 
   // [1] https://github.com/twitter/twitter-text/blob/master/conformance/validate.yml
 }
@@ -214,7 +202,6 @@ links (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_LINK);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 11);
-
   g_free (entities);
 
   // Numbers at the start of domains are also valid - RFC 952 said no but RFC 1123 said yes
@@ -225,7 +212,6 @@ links (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_LINK);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 14);
-
   g_free (entities);
 
   // That also allows completely numeric domains (e.g. "123.[many-tlds]" is already registered)
@@ -235,26 +221,22 @@ links (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_LINK);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 7);
-
   g_free (entities);
 
   // But make sure that we don't allow numeric TLD
   entities = tl_extract_entities ("http://example.000", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 0);
   g_assert_null (entities);
-
   g_free (entities);
 
   entities = tl_extract_entities ("twitter.c", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 0);
   g_assert_null (entities);
-
   g_free (entities);
 
   entities = tl_extract_entities ("http://", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 0);
   g_assert_null (entities);
-
   g_free (entities);
 
   entities = tl_extract_entities ("foobar.com::8080/foo.html", &n_entities, NULL);
@@ -263,13 +245,11 @@ links (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_LINK);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 10);
-
   g_free (entities);
 
   entities = tl_extract_entities ("foo /twitter.com", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 0);
   g_assert_null (entities);
-
   g_free (entities);
 
   entities = tl_extract_entities ("foo.商城", &n_entities, NULL);
@@ -277,14 +257,12 @@ links (void)
   g_assert_nonnull (entities);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-
   g_free (entities);
 
   entities = tl_extract_entities ("foo.de http://foo.de", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 1);
   g_assert_nonnull (entities);
   g_assert_cmpint (entities[0].start_character_index, ==, 7);
-
   g_free (entities);
 
   entities = tl_extract_entities ("http://foobar.co.uk", &n_entities, NULL);
@@ -292,7 +270,6 @@ links (void)
   g_assert_nonnull (entities);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 19);
-
   g_free (entities);
 
   entities = tl_extract_entities ("http://example.org.uk", &n_entities, NULL);
@@ -301,7 +278,6 @@ links (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_LINK);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 21);
-
   g_free (entities);
 
   // And just to make sure that we're not special-casing TLD-like entries:
@@ -321,13 +297,11 @@ links (void)
   g_assert_cmpint (entities[0].type, ==, TL_ENT_LINK);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 21);
-
   g_free (entities);
 
   entities = tl_extract_entities ("foobar.uk", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 0);
   g_assert_null (entities);
-
   g_free (entities);
 
   // .co is a "special tld"
@@ -336,7 +310,6 @@ links (void)
   g_assert_nonnull (entities);
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 9);
-
   g_free (entities);
 
   entities = tl_extract_entities ("http://-foobar.com", &n_entities, NULL);
@@ -476,7 +449,6 @@ combined (void)
   g_assert_cmpint (entities[2].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[2].start_character_index, ==, 25);
   g_assert_cmpint (entities[2].length_in_characters, ==, 5);
-
   g_free (entities);
 }
 
@@ -519,7 +491,6 @@ link_conformance1 (void)
     g_assert_nonnull (entities);
     g_assert_cmpint (n_entities, ==, 1);
     g_assert_cmpint (entities[0].start_character_index, ==, 0);
-
     g_free (entities);
   }
 }
@@ -533,7 +504,6 @@ and_text (void)
   entities = tl_extract_entities_and_text ("", &n_entities, NULL);
   g_assert_null (entities);
   g_assert_cmpint (n_entities, ==, 0);
-
   g_free (entities);
 }
 
