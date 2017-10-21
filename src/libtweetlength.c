@@ -168,6 +168,31 @@ emplace_entity (GArray     *array,
   e->length_in_characters = entity_length_in_characters;
 }
 
+static inline void
+emplace_entity_for_tokens (GArray      *array,
+                           const Token *tokens,
+                           guint        entity_type,
+                           guint        start_token_index,
+                           guint        end_token_index)
+{
+  TlEntity *e;
+  guint i;
+
+  g_array_set_size (array, array->len + 1);
+  e = &g_array_index (array, TlEntity, array->len - 1);
+
+  e->type = entity_type;
+  e->start = tokens[start_token_index].start;
+  e->length_in_bytes = 0;
+  e->length_in_characters = 0;
+  e->start_character_index = tokens[start_token_index].start_character_index;
+
+  for (i = start_token_index; i <= end_token_index; i ++) {
+    e->length_in_bytes += tokens[i].length_in_bytes;
+    e->length_in_characters += tokens[i].length_in_characters;
+  }
+}
+
 static inline gboolean
 token_is_tld (const Token *t,
               gboolean     has_protocol)
@@ -530,21 +555,11 @@ parse_link (GArray      *entities,
   end_token = i;
   g_assert (end_token < n_tokens);
 
-  // Simply add up all the lengths
-  gsize length_in_bytes = 0;
-  gsize length_in_characters = 0;
-  const char *first_byte = tokens[start_token].start;
-  for (i = start_token; i <= end_token; i ++) {
-    length_in_bytes += tokens[i].length_in_bytes;
-    length_in_characters += tokens[i].length_in_characters;
-  }
-
-  emplace_entity (entities,
-                  TL_ENT_LINK,
-                  first_byte,
-                  length_in_bytes,
-                  tokens[start_token].start_character_index,
-                  length_in_characters);
+  emplace_entity_for_tokens (entities,
+                             tokens,
+                             TL_ENT_LINK,
+                             start_token,
+                             end_token);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -592,21 +607,11 @@ parse_mention (GArray      *entities,
   end_token = i;
   g_assert (end_token < n_tokens);
 
-  // Simply add up all the lengths
-  gsize length_in_bytes = 0;
-  gsize length_in_characters = 0;
-  const char *first_byte = tokens[start_token].start;
-  for (i = start_token; i <= end_token; i ++) {
-    length_in_bytes += tokens[i].length_in_bytes;
-    length_in_characters += tokens[i].length_in_characters;
-  }
-
-  emplace_entity (entities,
-                  TL_ENT_MENTION,
-                  first_byte,
-                  length_in_bytes,
-                  tokens[start_token].start_character_index,
-                  length_in_characters);
+  emplace_entity_for_tokens (entities,
+                             tokens,
+                             TL_ENT_MENTION,
+                             start_token,
+                             end_token);
 
   *current_position = end_token + 1; // Hop to the next token!
 
@@ -646,21 +651,11 @@ parse_hashtag (GArray      *entities,
   end_token = i - 1;
   g_assert (end_token < n_tokens);
 
-  // Simply add up all the lengths
-  gsize length_in_bytes = 0;
-  gsize length_in_characters = 0;
-  const char *first_byte = tokens[start_token].start;
-  for (i = start_token; i <= end_token; i ++) {
-    length_in_bytes += tokens[i].length_in_bytes;
-    length_in_characters += tokens[i].length_in_characters;
-  }
-
-  emplace_entity (entities,
-                  TL_ENT_HASHTAG,
-                  first_byte,
-                  length_in_bytes,
-                  tokens[start_token].start_character_index,
-                  length_in_characters);
+  emplace_entity_for_tokens (entities,
+                             tokens,
+                             TL_ENT_HASHTAG,
+                             start_token,
+                             end_token);
 
   *current_position = end_token + 1; // Hop to the next token!
 
