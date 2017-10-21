@@ -55,7 +55,9 @@ enum {
   TOK_APOSTROPHE,
   TOK_QUOTE,
   TOK_DOLLAR,
-  TOK_AMPERSAND
+  TOK_AMPERSAND,
+  TOK_EXCLAMATION,
+  TOK_TILDE
 };
 
 static inline guint
@@ -92,6 +94,10 @@ token_type_from_char (gunichar c)
       return TOK_DOLLAR;
     case '&':
       return TOK_AMPERSAND;
+    case '!':
+      return TOK_EXCLAMATION;
+    case '~':
+      return TOK_TILDE;
     case '0':
     case '1':
     case '2':
