@@ -20,11 +20,13 @@
 static void
 empty (void)
 {
-  gsize n_entities;
+  gsize n_entities = 15;
+  gsize length = 10;
   TlEntity *entities;
 
-  entities = tl_extract_entities ("", &n_entities, NULL);
+  entities = tl_extract_entities ("", &n_entities, &length);
   g_assert_cmpint (n_entities, ==, 0);
+  g_assert_cmpint (length, ==, 0);
   g_assert_null (entities);
 
   g_free (entities);
