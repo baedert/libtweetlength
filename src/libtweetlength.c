@@ -307,7 +307,7 @@ tokenize (const char *input,
   const char *p = input;
   gsize cur_character_index = 0;
 
-  while (p - input < length_in_bytes) {
+  while (p - input < (long)length_in_bytes) {
     const char *cur_start = p;
     gunichar cur_char = g_utf8_get_char (p);
     gsize cur_length = 0;
@@ -334,7 +334,8 @@ tokenize (const char *input,
       if (token_type_from_char (cur_char) != last_token_type)
         break;
 
-    } while (!char_splits (cur_char) && p - input < length_in_bytes);
+    } while (!char_splits (cur_char) &&
+             p - input < (long)length_in_bytes);
 
     emplace_token (tokens, cur_start, cur_length, cur_character_index, length_in_chars);
 
