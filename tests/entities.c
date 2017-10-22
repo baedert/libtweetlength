@@ -823,6 +823,27 @@ links (void)
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 10);
   g_free (entities);
+
+  entities = tl_extract_entities ("foobar.com_", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert (entities[0].type == TL_ENT_LINK);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 10);
+  g_free (entities);
+
+  entities = tl_extract_entities ("_foobar.com", &n_entities, NULL);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("foobar.com//", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert (entities[0].type == TL_ENT_LINK);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 12);
+  g_free (entities);
 }
 
 static void
