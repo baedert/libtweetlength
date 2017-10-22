@@ -135,11 +135,125 @@ mentions (void)
   g_assert_cmpint (entities[0].length_in_characters, ==, 8);
   g_free (entities);
 
+  entities = tl_extract_entities ("@baedert-", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 0);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities ("~@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities (",@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities (";@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities (":@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities ("`@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities ("/@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  // TODO: Accented characters are handled specially...
+  /*entities = tl_extract_entities ("á@baedert", &n_entities, NULL);*/
+  /*g_assert_cmpint (n_entities, ==, 1);*/
+  /*g_assert_nonnull (entities);*/
+  /*g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);*/
+  /*g_assert_cmpint (entities[0].start_character_index, ==, 1);*/
+  /*g_assert_cmpint (entities[0].length_in_characters, ==, 8);*/
+  /*g_free (entities);*/
+
+  // TODO: Special rules apply to mention characters, even inside text tokens
+  /*entities = tl_extract_entities ("á@baedert", &n_entities, NULL);*/
+  /*g_assert_cmpint (n_entities, ==, 1);*/
+  /*g_assert_nonnull (entities);*/
+  /*g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);*/
+  /*g_assert_cmpint (entities[0].start_character_index, ==, 1);*/
+  /*g_assert_cmpint (entities[0].length_in_characters, ==, 8);*/
+  /*g_free (entities);*/
+
   entities = tl_extract_entities ("Is it @baedert, I wonder?", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 1);
   g_assert_nonnull (entities);
   g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
   g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities ("_@baedert", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("123@baedert", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("abc@baedert", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("!@baedert", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("$@baedert", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("&@baedert", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("#@baedert", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("*@baedert", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
   g_free (entities);
 
   // [1] https://github.com/twitter/twitter-text/blob/master/conformance/validate.yml

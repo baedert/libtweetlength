@@ -607,14 +607,31 @@ parse_mention (GArray      *entities,
 
   // Lookback at the previous token. If it was a text token
   // without whitespace between, this is not going to be a mention...
-  if (i > 0 && tokens[i - 1].type == TOK_TEXT) {
-    return FALSE;
+  if (i > 0) {
+    // Text tokens before an @-token generally destroy the mention,
+    // except in a few cases...
+    if (tokens[i - 1].type == TOK_TEXT &&
+        !token_in (&tokens[i - 1], VALID_BEFORE_MENTION_CHARS)) {
+      return FALSE;
+    }
+
+    // Numbers and special invalid chars always ruin the mention
+    if (tokens[i - 1].type == TOK_NUMBER ||
+        token_in (&tokens[i - 1], INVALID_BEFORE_MENTION_CHARS)) {
+      return FALSE;
+    }
   }
 
   // Skip @
   i ++;
 
   for (;;) {
+    if (i >= n_tokens) {
+      i --;
+      break;
+    }
+
+    g_message ("Token in: %u", i);
     if (token_in (&tokens[i], INVALID_MENTION_CHARS)) {
       i --;
       break;
