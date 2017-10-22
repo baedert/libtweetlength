@@ -374,7 +374,6 @@ parse_link_tail (GArray      *entities,
   const Token *t;
 
   g_debug ("--------");
-  g_debug ("n_tokens; %u", (guint) n_tokens);
 
   gsize paren_level = 0;
   int first_paren_index = -1;
@@ -383,12 +382,9 @@ parse_link_tail (GArray      *entities,
 
     if (t->type == TOK_WHITESPACE || t->type == TOK_APOSTROPHE) {
       i --;
-      g_debug("Found non-URL character - backtracked one to %d", i);
       break;
     }
 
-    g_debug ("Token %u: Type: %d, Length: %u, Text:%.*s", i, t->type, (guint)t->length_in_bytes,
-         (int)t->length_in_bytes, t->start);
     if (tokens[i].type == TOK_OPEN_PAREN) {
 
       if (first_paren_index == -1) {
@@ -425,11 +421,9 @@ parse_link_tail (GArray      *entities,
 
   t = &tokens[i];
   /* Whatever happened, don't count trailing punctuation */
-  if (t->type == TOK_QUESTIONMARK) {
-    // TODO: We should probably have a more generic way of identifying "punctuation"
+  if (token_in (t, INVALID_AFTER_URL_CHARS)) {
     i --;
   }
-
 
   *current_position = i;
 
@@ -631,7 +625,6 @@ parse_mention (GArray      *entities,
       break;
     }
 
-    g_message ("Token in: %u", i);
     if (token_in (&tokens[i], INVALID_MENTION_CHARS)) {
       i --;
       break;
