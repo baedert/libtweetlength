@@ -135,6 +135,13 @@ mentions (void)
   g_assert_cmpint (entities[0].length_in_characters, ==, 8);
   g_free (entities);
 
+  entities = tl_extract_entities ("Is it @baedert, I wonder?", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
   // [1] https://github.com/twitter/twitter-text/blob/master/conformance/validate.yml
 }
 
@@ -224,6 +231,11 @@ hashtags (void)
 
   entities = tl_extract_entities ("#_", &n_entities, &text_length);
   g_assert_null (entities);
+  g_free (entities);
+
+  entities = tl_extract_entities ("foo#bar,", &n_entities, NULL);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
   g_free (entities);
 }
 

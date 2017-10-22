@@ -28,6 +28,7 @@
 #define INVALID_BEFORE_URL_CHARS              ("$")
 
 #define INVALID_HASHTAG_CHARS "!'#%&\"()*+,\\-./:;<=>?@[]^{|}~$`"
+#define INVALID_MENTION_CHARS "!'#%&\"()*+,\\-./:;<=>?@[]^{|}~$`"
 
 
 // List from twitter-text

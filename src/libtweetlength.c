@@ -599,14 +599,11 @@ parse_mention (GArray      *entities,
                gsize        n_tokens,
                guint       *current_position)
 {
-  const Token *t;
-  gsize i = *current_position;
-  guint start_token;
+  guint i = *current_position;
+  const guint start_token = i;
   guint end_token;
 
-  t = &tokens[i];
-  g_assert (t->type == TOK_AT);
-  start_token = i;
+  g_assert (tokens[i].type == TOK_AT);
 
   // Lookback at the previous token. If it was a text token
   // without whitespace between, this is not going to be a mention...
@@ -614,10 +611,22 @@ parse_mention (GArray      *entities,
     return FALSE;
   }
 
-  while (i < n_tokens - 1 &&
-        (tokens[i + 1].type == TOK_TEXT ||
-         tokens[i + 1].type == TOK_NUMBER ||
-         tokens[i + 1].type == TOK_UNDERSCORE)) {
+  // Skip @
+  i ++;
+
+  for (;;) {
+    if (token_in (&tokens[i], INVALID_MENTION_CHARS)) {
+      i --;
+      break;
+    }
+
+    if (tokens[i].type != TOK_TEXT &&
+        tokens[i].type != TOK_NUMBER &&
+        tokens[i].type != TOK_UNDERSCORE) {
+      i --;
+      break;
+    }
+
     i ++;
   }
 
@@ -652,17 +661,22 @@ parse_hashtag (GArray      *entities,
                guint       *current_position)
 {
   gsize i = *current_position;
-  guint start_token;
+  const guint start_token = i;
   guint end_token;
   gboolean text_found = FALSE;
 
   g_assert (tokens[i].type == TOK_HASH);
-  start_token = i;
+
+  // Lookback at the previous token. If it was a text token
+  // without whitespace between, this is not going to be a mention...
+  if (i > 0 && tokens[i - 1].type == TOK_TEXT) {
+    return FALSE;
+  }
 
   //skip #
   i ++;
 
-  for (;i < n_tokens; i ++) {
+  for (; i < n_tokens; i ++) {
     if (token_in (&tokens[i], INVALID_HASHTAG_CHARS)) {
       break;
     }
