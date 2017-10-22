@@ -663,8 +663,13 @@ parse_hashtag (GArray      *entities,
   i ++;
 
   for (;i < n_tokens; i ++) {
+    if (token_in (&tokens[i], INVALID_HASHTAG_CHARS)) {
+      break;
+    }
+
     if (tokens[i].type != TOK_TEXT &&
-        tokens[i].type != TOK_NUMBER) {
+        tokens[i].type != TOK_NUMBER &&
+        tokens[i].type != TOK_UNDERSCORE) {
       break;
     }
 

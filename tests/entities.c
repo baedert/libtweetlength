@@ -203,6 +203,26 @@ hashtags (void)
   g_assert_cmpint (entities[0].start_character_index, ==, 0);
   g_assert_cmpint (entities[0].length_in_characters, ==, 4);
   g_free (entities);
+
+  entities = tl_extract_entities ("What is this #shit, I wonder?", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 5);
+  g_free (entities);
+
+  entities = tl_extract_entities ("#,", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("#__abc__", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_free (entities);
+
+  entities = tl_extract_entities ("#_", &n_entities, &text_length);
+  g_assert_null (entities);
+  g_free (entities);
 }
 
 static void
