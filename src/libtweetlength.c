@@ -161,26 +161,6 @@ emplace_token (GArray     *array,
 }
 
 static inline void
-emplace_entity (GArray     *array,
-                guint       entity_type,
-                const char *entity_start,
-                gsize       entity_length_in_bytes,
-                gsize       entity_character_start,
-                gsize       entity_length_in_characters)
-{
-  TlEntity *e;
-
-  g_array_set_size (array, array->len + 1);
-  e = &g_array_index (array, TlEntity, array->len - 1);
-
-  e->type = entity_type;
-  e->start = entity_start;
-  e->length_in_bytes = entity_length_in_bytes;
-  e->start_character_index = entity_character_start;
-  e->length_in_characters = entity_length_in_characters;
-}
-
-static inline void
 emplace_entity_for_tokens (GArray      *array,
                            const Token *tokens,
                            guint        entity_type,
@@ -762,12 +742,10 @@ parse (const Token *tokens,
       relevant_entities ++;
     }
 
-    emplace_entity (entities,
-                    token->type == TOK_WHITESPACE ? TL_ENT_WHITESPACE : TL_ENT_TEXT,
-                    token->start,
-                    token->length_in_bytes,
-                    token->start_character_index,
-                    token->length_in_characters);
+    emplace_entity_for_tokens (entities,
+                               tokens,
+                               token->type == TOK_WHITESPACE ? TL_ENT_WHITESPACE : TL_ENT_TEXT,
+                               i, i);
 
     i ++;
   }
