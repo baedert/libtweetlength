@@ -775,8 +775,9 @@ count_entities_in_characters (GArray *entities)
 
 /*
  * tl_count_chars:
- * input: (nullable): Tweet text
+ * input: (nullable): NUL-terminated tweet text
  *
+ * Returns: The length of @input, in characters.
  */
 gsize
 tl_count_characters (const char *input)
@@ -793,7 +794,7 @@ tl_count_characters (const char *input)
  * input: (nullable): Text to measure
  * length_in_bytes: Length of @input, in bytes.
  *
- * TODO: We might want to do a g_utf8_make_valid or at least _validate.
+ * Returns: The length of @input, in characters.
  */
 gsize
 tl_count_characters_n (const char *input,
