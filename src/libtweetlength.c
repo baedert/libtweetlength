@@ -746,7 +746,8 @@ parse (const Token *tokens,
       break;
     }
 
-    if (extract_text_entities) {
+    if (extract_text_entities &&
+        token->type == TOK_TEXT) {
       relevant_entities ++;
     }
 
