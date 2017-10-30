@@ -35,6 +35,13 @@ token_str (const Token *t)
 {
   return g_strdup_printf ("Type: %u, Text: '%.*s'", t->type, (int)t->length_in_bytes, t->start);
 }
+
+static char * G_GNUC_UNUSED
+entity_str (const TlEntity *e)
+{
+  return g_strdup_printf ("Type: %u, Text: '%.*s'", e->type, (int)e->length_in_bytes, e->start);
+}
+
 #endif
 
 enum {
