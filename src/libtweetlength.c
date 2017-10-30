@@ -918,7 +918,7 @@ tl_extract_entities_internal (const char *input,
           memcpy (&result_entities[result_index], e, sizeof (TlEntity));
           result_index ++;
         }
-        break;
+      break;
 
       default: {}
     }
