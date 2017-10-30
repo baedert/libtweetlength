@@ -450,7 +450,10 @@ parse_link (GArray      *entities,
     if (t->type != TOK_SLASH) {
       return FALSE;
     }
-
+    // If we are at the end now, this is not a link, just the protocol.
+    if (i + 1 == n_tokens - 1) {
+      return FALSE;
+    }
     i += 2; // Skip to token after second slash
     has_protocol = TRUE;
   } else {
