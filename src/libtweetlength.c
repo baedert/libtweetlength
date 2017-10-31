@@ -667,7 +667,13 @@ parse_hashtag (GArray      *entities,
 
   // Lookback at the previous token. If it was a text token
   // without whitespace between, this is not going to be a mention...
-  if (i > 0 && tokens[i - 1].type == TOK_TEXT) {
+  if (i > 0 && tokens[i - 1].type == TOK_TEXT &&
+      !token_in (&tokens[i - 1], VALID_BEFORE_HASHTAG_CHARS)) {
+    return FALSE;
+  }
+
+  // Some chars make the entire hashtag invalid
+  if (i > 0 && token_in (&tokens[i - 1], INVALID_BEFORE_HASHTAG_CHARS)) {
     return FALSE;
   }
 

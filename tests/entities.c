@@ -340,6 +340,69 @@ hashtags (void)
   g_assert_cmpint (entities[0].length_in_characters, ==, 4);
   g_free (entities);
 
+  entities = tl_extract_entities ("{#gdbus", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+  g_free (entities);
+
+  entities = tl_extract_entities ("?#gdbus", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+  g_free (entities);
+
+  entities = tl_extract_entities ("\\#gdbus", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+  g_free (entities);
+
+  entities = tl_extract_entities ("/#gdbus", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+  g_free (entities);
+
+  entities = tl_extract_entities ("@#gdbus", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+  g_free (entities);
+
+  entities = tl_extract_entities (">#gdbus", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+  g_free (entities);
+
+  entities = tl_extract_entities ("<#gdbus", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+  g_free (entities);
+
+  entities = tl_extract_entities ("##gdbus", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+  g_free (entities);
+
+  entities = tl_extract_entities ("`#gdbus", &n_entities, &text_length);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
+  g_free (entities);
+
   entities = tl_extract_entities ("What is this #shit, I wonder?", &n_entities, &text_length);
   g_assert_nonnull (entities);
   g_assert_cmpint (n_entities, ==, 1);
@@ -361,6 +424,11 @@ hashtags (void)
   g_free (entities);
 
   entities = tl_extract_entities ("foo#bar,", &n_entities, NULL);
+  g_assert_null (entities);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_free (entities);
+
+  entities = tl_extract_entities ("_#abc,", &n_entities, NULL);
   g_assert_null (entities);
   g_assert_cmpint (n_entities, ==, 0);
   g_free (entities);
