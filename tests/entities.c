@@ -273,164 +273,86 @@ mentions (void)
 }
 
 static void
+valid_hashtags (void)
+{
+  const char * const hashtags[] = {
+    "#foobar",
+    ",#foobar",
+    "{#foobar",
+    "}#foobar",
+    "<#foobar",
+    ">#foobar",
+    ";#foobar",
+    ":#foobar",
+    "?#foobar",
+    "\\#foobar",
+    "/#foobar",
+    "@#foobar",
+    "##foobar",
+    "`#foobar",
+    "*#foobar",
+    "#123bar",
+    "#foo123",
+    "#fo12ar",
+    "#ашок",
+    "#트위터",
+    "#__abc__",
+  };
+  gsize text_length;
+  gsize n_entities;
+  TlEntity *entities;
+  guint i;
+
+  for (i = 0; i < G_N_ELEMENTS (hashtags); i ++)
+    {
+      const char *text = hashtags[i];
+
+      entities = tl_extract_entities (text, &n_entities, &text_length);
+      g_assert_cmpint (n_entities, ==, 1);
+      g_assert_nonnull (entities);
+      g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
+      g_free (entities);
+    }
+}
+
+static void
+invalid_hashtags (void)
+{
+  const char * const hashtags[] = {
+    "&#foobar",
+    "_#foobar",
+    "#123",
+    "#,",
+    "#_",
+    "foo#bar",
+  };
+  gsize text_length;
+  gsize n_entities;
+  TlEntity *entities;
+  guint i;
+
+  for (i = 0; i < G_N_ELEMENTS (hashtags); i ++)
+    {
+      const char *text = hashtags[i];
+
+      entities = tl_extract_entities (text, &n_entities, &text_length);
+      g_assert_cmpint (n_entities, ==, 0);
+      g_assert_null (entities);
+      g_free (entities);
+    }
+}
+
+static void
 hashtags (void)
 {
   gsize text_length;
   gsize n_entities;
   TlEntity *entities;
 
-  entities = tl_extract_entities ("#foobar", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (text_length, ==, 7);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
-  g_assert_cmpint (entities[0].start_character_index, ==, 0);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 7);
-  g_free (entities);
-
-  entities = tl_extract_entities ("#123abc", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (text_length, ==, 7);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
-  g_assert_cmpint (entities[0].start_character_index, ==, 0);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 7);
-  g_free (entities);
-
-  entities = tl_extract_entities ("#that1time", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (text_length, ==, 10);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
-  g_assert_cmpint (entities[0].start_character_index, ==, 0);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 10);
-  g_free (entities);
-
-  entities = tl_extract_entities ("#timethat1", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (text_length, ==, 10);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
-  g_assert_cmpint (entities[0].start_character_index, ==, 0);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 10);
-  g_free (entities);
-
-  // All-number hastags are invalid.
-  entities = tl_extract_entities ("#123", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 0);
-  g_assert_cmpint (text_length, ==, 4);
-  g_assert_null (entities);
-  g_free (entities);
-
-  entities = tl_extract_entities ("#ашок", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (text_length, ==, 5);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
-  g_assert_cmpint (entities[0].start_character_index, ==, 0);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 5);
-  g_free (entities);
-
-  entities = tl_extract_entities ("#트위터", &n_entities, &text_length);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (text_length, ==, 4);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (entities[0].type, ==, TL_ENT_HASHTAG);
-  g_assert_cmpint (entities[0].start_character_index, ==, 0);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 4);
-  g_free (entities);
-
-  entities = tl_extract_entities ("{#gdbus", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (entities[0].start_character_index, ==, 1);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-  g_free (entities);
-
-  entities = tl_extract_entities ("?#gdbus", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (entities[0].start_character_index, ==, 1);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-  g_free (entities);
-
-  entities = tl_extract_entities ("\\#gdbus", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (entities[0].start_character_index, ==, 1);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-  g_free (entities);
-
-  entities = tl_extract_entities ("/#gdbus", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (entities[0].start_character_index, ==, 1);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-  g_free (entities);
-
-  entities = tl_extract_entities ("@#gdbus", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (entities[0].start_character_index, ==, 1);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-  g_free (entities);
-
-  entities = tl_extract_entities (">#gdbus", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (entities[0].start_character_index, ==, 1);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-  g_free (entities);
-
-  entities = tl_extract_entities ("<#gdbus", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (entities[0].start_character_index, ==, 1);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-  g_free (entities);
-
-  entities = tl_extract_entities ("##gdbus", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (entities[0].start_character_index, ==, 1);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-  g_free (entities);
-
-  entities = tl_extract_entities ("`#gdbus", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_assert_cmpint (entities[0].start_character_index, ==, 1);
-  g_assert_cmpint (entities[0].length_in_characters, ==, 6);
-  g_free (entities);
-
   entities = tl_extract_entities ("What is this #shit, I wonder?", &n_entities, &text_length);
   g_assert_nonnull (entities);
   g_assert_cmpint (n_entities, ==, 1);
   g_assert_cmpint (entities[0].length_in_characters, ==, 5);
-  g_free (entities);
-
-  entities = tl_extract_entities ("#,", &n_entities, &text_length);
-  g_assert_null (entities);
-  g_assert_cmpint (n_entities, ==, 0);
-  g_free (entities);
-
-  entities = tl_extract_entities ("#__abc__", &n_entities, &text_length);
-  g_assert_nonnull (entities);
-  g_assert_cmpint (n_entities, ==, 1);
-  g_free (entities);
-
-  entities = tl_extract_entities ("#_", &n_entities, &text_length);
-  g_assert_null (entities);
-  g_free (entities);
-
-  entities = tl_extract_entities ("foo#bar,", &n_entities, NULL);
-  g_assert_null (entities);
-  g_assert_cmpint (n_entities, ==, 0);
-  g_free (entities);
-
-  entities = tl_extract_entities ("_#abc,", &n_entities, NULL);
-  g_assert_null (entities);
-  g_assert_cmpint (n_entities, ==, 0);
   g_free (entities);
 }
 
@@ -1089,6 +1011,8 @@ main (int argc, char **argv)
   g_test_add_func ("/entities/empty", empty);
   g_test_add_func ("/entities/mentions", mentions);
   g_test_add_func ("/entities/hashtags", hashtags);
+  g_test_add_func ("/entities/valid-hashtags", valid_hashtags);
+  g_test_add_func ("/entities/invalid-hashtags", invalid_hashtags);
   g_test_add_func ("/entities/links", links);
   g_test_add_func ("/entities/combined", combined);
   g_test_add_func ("/entities/link-conformance1", link_conformance1);
