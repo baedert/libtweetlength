@@ -997,6 +997,16 @@ and_text (void)
   g_assert_nonnull (entities);
   g_assert_cmpint (n_entities, ==, 2);
   g_free (entities);
+
+  entities = tl_extract_entities_and_text ("fobar @corebi \n\n\n\n\n\n\n \n\n\n\n\n", &n_entities, NULL);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 2);
+  g_free (entities);
+
+
+  entities = tl_extract_entities_and_text ("asduiehf aiosufsifui hfuis0", &n_entities, NULL);
+  g_assert_nonnull (entities);
+  g_free (entities);
 }
 
 int
