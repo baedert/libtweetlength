@@ -191,6 +191,16 @@ mentions (void)
   g_assert_cmpint (entities[0].length_in_characters, ==, 8);
   g_free (entities);
 
+  entities = tl_extract_entities ("@🎇", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+  g_free (entities);
+
+  entities = tl_extract_entities ("@bädert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+  g_free (entities);
+
   // TODO: Accented characters are handled specially...
   /*entities = tl_extract_entities ("á@baedert", &n_entities, NULL);*/
   /*g_assert_cmpint (n_entities, ==, 1);*/

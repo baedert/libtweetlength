@@ -193,6 +193,17 @@ emplace_entity_for_tokens (GArray      *array,
 }
 
 static inline gboolean
+is_valid_mention_char (gunichar c)
+{
+  // Just ASCII
+  if (c > 127)
+    return FALSE;
+
+  return TRUE;
+}
+
+
+static inline gboolean
 token_is_tld (const Token *t,
               gboolean     has_protocol)
 {
@@ -623,6 +634,23 @@ parse_mention (GArray      *entities,
         tokens[i].type != TOK_UNDERSCORE) {
       i --;
       break;
+    }
+
+    if (tokens[i].type == TOK_TEXT) {
+      const char *text = tokens[i].start;
+      // Special rules apply about what characters may appear in a @screen_name
+      const char *p = text;
+
+      while (p - text < (long)tokens[i].length_in_bytes) {
+        gunichar c = g_utf8_get_char (p);
+
+        if (!is_valid_mention_char (c)) {
+          return FALSE;
+        }
+
+        p = g_utf8_next_char (p);
+      }
+
     }
 
     i ++;
