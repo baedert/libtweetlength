@@ -210,11 +210,11 @@ mentions (void)
   /*g_assert_cmpint (entities[0].length_in_characters, ==, 8);*/
   /*g_free (entities);*/
 
-  // TODO: Special rules apply to mention characters, even inside text tokens
-  /*entities = tl_extract_entities ("@báedert", &n_entities, NULL);*/
-  /*g_assert_cmpint (n_entities, ==, 0);*/
-  /*g_assert_null (entities);*/
-  /*g_free (entities);*/
+  // Special rules apply to mention characters, even inside text tokens
+  entities = tl_extract_entities ("@báedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+  g_free (entities);
 
   /*entities = tl_extract_entities ("áfoo@baedert", &n_entities, &text_length);*/
   /*g_assert_null (entities);*/
