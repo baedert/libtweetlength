@@ -201,14 +201,41 @@ mentions (void)
   g_assert_null (entities);
   g_free (entities);
 
-  // TODO: Accented characters are handled specially...
-  /*entities = tl_extract_entities ("á@baedert", &n_entities, NULL);*/
-  /*g_assert_cmpint (n_entities, ==, 1);*/
-  /*g_assert_nonnull (entities);*/
-  /*g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);*/
-  /*g_assert_cmpint (entities[0].start_character_index, ==, 1);*/
-  /*g_assert_cmpint (entities[0].length_in_characters, ==, 8);*/
-  /*g_free (entities);*/
+  entities = tl_extract_entities ("á@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 1);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities ("aä@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 2);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities ("áá@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 2);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities ("áaá@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].start_character_index, ==, 3);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
+
+  entities = tl_extract_entities ("aáa@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 0);
+  g_assert_null (entities);
+  g_free (entities);
 
   // Special rules apply to mention characters, even inside text tokens
   entities = tl_extract_entities ("@báedert", &n_entities, NULL);
@@ -221,13 +248,13 @@ mentions (void)
   g_assert_cmpint (n_entities, ==, 0);
   g_free (entities);
 
-  /*entities = tl_extract_entities ("fooá@baedert", &n_entities, NULL);*/
-  /*g_assert_cmpint (n_entities, ==, 1);*/
-  /*g_assert_nonnull (entities);*/
-  /*g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);*/
-  /*g_assert_cmpint (entities[0].start_character_index, ==, 1);*/
-  /*g_assert_cmpint (entities[0].length_in_characters, ==, 8);*/
-  /*g_free (entities);*/
+  entities = tl_extract_entities ("fooá@baedert", &n_entities, NULL);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_MENTION);
+  g_assert_cmpint (entities[0].start_character_index, ==, 4);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 8);
+  g_free (entities);
 
   entities = tl_extract_entities ("Is it @baedert, I wonder?", &n_entities, NULL);
   g_assert_cmpint (n_entities, ==, 1);
@@ -1003,6 +1030,25 @@ and_text (void)
 
   entities = tl_extract_entities_and_text ("asduiehf aiosufsifui hfuis0", &n_entities, NULL);
   g_assert_nonnull (entities);
+  g_free (entities);
+
+  entities = tl_extract_entities_and_text ("á", &n_entities, NULL);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 1);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_TEXT);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 1);
+  g_free (entities);
+
+
+  entities = tl_extract_entities_and_text ("á ó ö", &n_entities, NULL);
+  g_assert_nonnull (entities);
+  g_assert_cmpint (n_entities, ==, 3);
+  g_assert_cmpint (entities[0].type, ==, TL_ENT_TEXT);
+  g_assert_cmpint (entities[0].length_in_characters, ==, 1);
+  g_assert_cmpint (entities[1].type, ==, TL_ENT_TEXT);
+  g_assert_cmpint (entities[1].length_in_characters, ==, 1);
+  g_assert_cmpint (entities[2].type, ==, TL_ENT_TEXT);
+  g_assert_cmpint (entities[2].length_in_characters, ==, 1);
   g_free (entities);
 }
 

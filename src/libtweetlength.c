@@ -127,6 +127,33 @@ token_type_from_char (gunichar c)
 }
 
 static inline gboolean
+token_ends_in_accented (const Token *t)
+{
+  const char *p = t->start;
+  gunichar c;
+  gsize i;
+
+  if (t->length_in_bytes == 1 ||
+      t->type != TOK_TEXT) {
+    return FALSE;
+  }
+
+  // The rules here aren't exactly clear...
+  // We read the last character of the text pointed to by the given token.
+  // If that's not an ascii character, we return TRUE.
+  for (i = 0; i < t->length_in_characters - 1; i ++) {
+    p = g_utf8_next_char (p);
+  }
+
+  c = g_utf8_get_char (p);
+
+  if (c > 127)
+    return TRUE;
+
+  return FALSE;
+}
+
+static inline gboolean
 token_in (const Token *t,
           const char  *haystack)
 {
@@ -604,7 +631,8 @@ parse_mention (GArray      *entities,
     // Text tokens before an @-token generally destroy the mention,
     // except in a few cases...
     if (tokens[i - 1].type == TOK_TEXT &&
-        !token_in (&tokens[i - 1], VALID_BEFORE_MENTION_CHARS)) {
+        !token_in (&tokens[i - 1], VALID_BEFORE_MENTION_CHARS) &&
+        !token_ends_in_accented (&tokens[i - 1])) {
       return FALSE;
     }
 
