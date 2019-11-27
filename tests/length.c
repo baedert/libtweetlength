@@ -132,6 +132,18 @@ utf8 (void)
 {
   g_assert_cmpint (tl_count_characters ("ä"), ==, 1);
   g_assert_cmpint (tl_count_characters ("a 😭 a"), ==, 5);
+
+  // New "weighted-length" calculation https://developer.twitter.com/en/docs/developer-utilities/twitter-text
+  g_assert_cmpint (tl_count_weighted_characters ("a"), ==, 1);
+  g_assert_cmpint (tl_count_weighted_characters ("ä"), ==, 1);
+  g_assert_cmpint (tl_count_weighted_characters ("火"), ==, 2);
+  g_assert_cmpint (tl_count_weighted_characters ("a 😭 a"), ==, 6);
+  g_assert_cmpint (tl_count_weighted_characters ("https://twitter.com/"), ==, 23);
+  g_assert_cmpint (tl_count_weighted_characters ("a https://twitter.com/ 火"), ==, 28);
+  g_assert_cmpint (tl_count_weighted_characters ("I am a Tweet"), <, 20);
+  g_assert_cmpint (tl_count_weighted_characters ("A lie gets halfway around the world before the truth has a chance to get its pants on. Winston Churchill (1874-1965) http://bit.ly/dJpywL"), ==, 140);
+  g_assert_cmpint (tl_count_weighted_characters ("A lié géts halfway arøünd thé wørld béføré thé truth has a chance tø get its pants øn. Winston Churchill (1874-1965) http://bit.ly/dJpywL"), ==, 140);
+  g_assert_cmpint (tl_count_weighted_characters ("のののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののののの"), ==, 280);
 }
 
 static void
